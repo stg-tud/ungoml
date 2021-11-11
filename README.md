@@ -1,7 +1,7 @@
 ## Unsafe Toolkit
 
 The usage of the unsafe library in Go allows developers to circumvent its memory
-protection and can introduce security vulnerabilities. go geiger helps developers
+protection and can introduce security vulnerabilities. `go-geiger` helps developers
 to spot usages of unsafe in their code. Machine learning can be used to classify
 the reason and context of this usage.
 
@@ -28,7 +28,7 @@ Build the docker image using the Dockerfile in the folder.
  
 Run the container and replace the keyword `snippet` with the path of the snippet file you want analyzed.
 
-`docker run --rm stg-tud/unsafe-toolkit -v snippet:/code.go` 
+`docker run --rm stg-tud/unsafe-toolkit -v snippet:/code.go -v /var/run/docker.sock:/var/run/docker.sock` 
 
 ### Environment variables:
 
