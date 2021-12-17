@@ -1,4 +1,4 @@
-#!/usr/bin python3 
+#!/usr/bin/env python3 
 # -*- coding: utf-8 -*-
 
 import sys
@@ -17,12 +17,17 @@ classifier_path : str = None
 
 def get_lines(): 
     try:
-        process = subprocess.run(executable="go-geiger", args=f'--show-code --project {args.project}', shell=True, capture_output=True, check=True)
-        output_lines = str(process.stdout, "utf-8").split("\n")
+        command = f"go-geiger --show-code {args.project}" 
+        stdout : str = None 
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
+            stdout = process.communicate()[0].decode("utf-8")
+            # print(stdout)
+        # process = subprocess.run(executable="go-geiger", args=["--show-code", args.project], capture_output=True, check=True)
+        output_lines = stdout.split("\n")
         # grep command
         relevant_lines = filter( lambda x : "go:" in x , output_lines)
         # Equivalent to tr -f 
-        line_numbers = map(lambda x : x.split(':')[2] )
+        line_numbers = list(map(lambda x : x.split(':')[2], relevant_lines))
         return line_numbers
     except subprocess.CalledProcessError as e:
         print(e)
@@ -31,31 +36,56 @@ def get_lines():
 
 def parse_args():
     global args
-    parser.add_argument("-f", "file", help="File name of Go file to analyze", required=True)
-    parser.add_argument("-p", "project", help="Path of package where the Go file lies in", default=os.environ["PROJECTS_DIR"])
+    parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
+    parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default=os.environ["PROJECTS_DIR"])
+    parser.add_argument("--package", help="Package name of Go file", required = True)
+    # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
     args = parser.parse_args()
 
 def setup():
     parse_args()
+    # get real path of project dir
+    # args.project = os.path.realpath(args.project)
+    # go-geiger gives different results based on relative path and real path 
+
     classifier_path = None 
 
 def run():
     setup()
     lines = get_lines()
+    
+    # prepare docker args
+    project_parent_dir = os.path.realpath('/'.join(args.project.split('/')[:-1]))
     for line in lines:
+        docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {args.file} predict -m WL2GNN'
         # Run container for each line 
-        process = subprocess.run(args = "--rm $ARGS \
-            -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v $pd:/projects \
-            usgoc/pred:latest $@", executable="docker", capture_output=True)
-
-        prediction : OrderedDict = OrderedDict(sorted(
-            json.loads(process.stdout).items(), key = lambda x : x[1], reversed = True 
-            )) 
-
-        formatted_json = json.dumps(indent=4)
-        colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
-        print(line)
-        print(colorful_json)
+        try: 
+            command = f"docker run --rm \
+                -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {project_parent_dir}:/projects \
+                usgoc/pred:latest {docker_args}" 
+            stdout : str = None 
+            print("Running command: %s" % command)
+            with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
+                stdout = process.communicate()[0].decode("utf-8")
+                # print(stdout)
+            '''
+            process = subprocess.run(args = f"run --rm \
+                -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {args.project}:/projects \
+                usgoc/pred:latest {docker_args}", executable="docker", capture_output=True, check = True)
+            '''
+            print("Line: %s" % line)
+            # JSON loads a JSON list 
+            for dic in json.loads(stdout):
+                prediction : OrderedDict = OrderedDict(sorted(
+                    dic.items(), key = lambda x : x[1], reverse = True 
+                    )) 
+                formatted_json = json.dumps(prediction , indent=4)
+                colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
+                # TBD
+                print(colorful_json)
+        except Exception as e:
+            print(e)
+            sys.exit(1)
 
 if __name__ == "__main__":
     run()
