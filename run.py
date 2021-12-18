@@ -39,7 +39,9 @@ def parse_args():
     parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
     parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default=os.environ["PROJECTS_DIR"])
     parser.add_argument("--package", help="Package name of Go file", required = True)
+    parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
+    # TODO: Output style, readable, machine etc.
     args = parser.parse_args()
 
 def setup():
@@ -52,6 +54,7 @@ def setup():
 
 def run():
     setup()
+    line_dic = {}
     lines = get_lines()
     
     # prepare docker args
@@ -67,25 +70,35 @@ def run():
             print("Running command: %s" % command)
             with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
                 stdout = process.communicate()[0].decode("utf-8")
-                # print(stdout)
+                if process.returncode != 0:
+                    raise Exception("Exit code from docker run stdout is not 0. Output: %s" % stdout )
             '''
             process = subprocess.run(args = f"run --rm \
                 -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {args.project}:/projects \
                 usgoc/pred:latest {docker_args}", executable="docker", capture_output=True, check = True)
             '''
-            print("Line: %s" % line)
+            # print("Line: %s" % line)
             # JSON loads a JSON list 
+            evaluate_list = []
             for dic in json.loads(stdout):
                 prediction : OrderedDict = OrderedDict(sorted(
                     dic.items(), key = lambda x : x[1], reverse = True 
                     )) 
-                formatted_json = json.dumps(prediction , indent=4)
-                colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
-                # TBD
-                print(colorful_json)
+                evaluate_list.append(prediction)
+            
+            line_dic[line] = evaluate_list
+                
         except Exception as e:
             print(e)
             sys.exit(1)
+
+    formatted_json = json.dumps(line_dic , indent=4)
+    colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
+    # TBD
+    print(colorful_json)
+    with open(args.output, 'w') as file:
+        file.write(colorful_json)
+    
 
 if __name__ == "__main__":
     run()
