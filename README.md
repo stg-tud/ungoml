@@ -17,12 +17,16 @@ Install [go-geiger]("https://github.com/stg-tud/go-geiger")
 Clone this repository with:
 
 `git clone git@github.com:stg-tud/unsafe-toolkit.git`
-
-## Running the analysis
  
 Enter the directory:
 
 `cd unsafe-toolkit`
+
+Install the required python packages: 
+
+`pip install -r requirements.txt`
+
+## Running the analysis
 
 Run the run.py file with the following arguments:
 ```
