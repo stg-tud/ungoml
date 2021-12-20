@@ -1,4 +1,4 @@
-## Unsafe Toolkit
+# Unsafe Toolkit
 
 The usage of the unsafe library in Go allows developers to circumvent its memory
 protection and can introduce security vulnerabilities. `go-geiger` helps developers
@@ -10,7 +10,9 @@ https://github.com/Cortys/unsafe-go-classifier. Snippets of Go code should be gi
 
 ## Installation 
 
-Install the `unsafe-go-classifier`.
+Install [unsafe-go-classifier]("https://github.com/Cortys/unsafe-go-classifier").
+
+Install [go-geiger]("https://github.com/stg-tud/go-geiger")
 
 Clone this repository with:
 
