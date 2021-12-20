@@ -1,6 +1,13 @@
 package main
-import "unsafe"
+import (
+	"unsafe"
+	"fmt"
+)
+
+
 
 func main() {
-	var x unsafe.Pointer()
+	var a = 1
+	var x = unsafe.Pointer(a)
+	fmt.Println(unsafe.Sizeof(x))
 }
