@@ -16,22 +16,30 @@ Clone this repository with:
 
 `git clone git@github.com:stg-tud/unsafe-toolkit.git`
 
+## Running the analysis
+ 
 Enter the directory:
 
 `cd unsafe-toolkit`
 
-Build the docker image using the Dockerfile in the folder.
+Run the run.py file with the following arguments:
+```
+usage: run.py [-h] -f FILE [-p PROJECT] --package PACKAGE [-o OUTPUT]
 
-`docker build . -t stg-tud/unsafe-toolkit`
+optional arguments:
+  -h, --help            show this help message and exit
+  -f FILE, --file FILE  File name of Go file to analyze
+  -p PROJECT, --project PROJECT
+                        Path of package where the Go file lies in
+  --package PACKAGE     Package name of Go file
+  -o OUTPUT, --output OUTPUT
+                        Output file of JSON file
+```
 
-## Running 
- 
-Run the container and replace the keyword `snippet` with the path of the snippet file you want analyzed.
+## Running the visualizer 
 
-`docker run --rm stg-tud/unsafe-toolkit -v snippet:/code.go -v /var/run/docker.sock:/var/run/docker.sock` 
+Run the visualize.py with the following arguments:
 
-### Environment variables:
 
-TBD
 
 
