@@ -12,7 +12,7 @@ https://github.com/Cortys/unsafe-go-classifier. Snippets of Go code should be gi
 
 Install [unsafe-go-classifier]("https://github.com/Cortys/unsafe-go-classifier").
 
-Install [go-geiger]("https://github.com/stg-tud/go-geiger")
+Install [go-geiger]("https://github.com/stg-tud/go-geiger").
 
 Clone this repository with:
 
@@ -28,7 +28,7 @@ Install the required python packages:
 
 ## Running the analysis
 
-Run the run.py file with the following arguments:
+Run the run.py file with the following arguments to export analysis data from a file/project:
 ```
 usage: run.py [-h] -f FILE [-p PROJECT] --package PACKAGE [-o OUTPUT]
 
@@ -44,7 +44,18 @@ optional arguments:
 
 ## Running the visualizer 
 
-Run the visualize.py with the following arguments:
+Run the visualize.py with the following arguments to visualize your acquired analysis:
+
+```
+usage: visualize.py [-h] [-i INPUT] [-o OUTPUT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -i INPUT, --input INPUT
+                        Path of input JSON file
+  -o OUTPUT, --output OUTPUT
+                        Path of output visualized file
+```
 
 
 
