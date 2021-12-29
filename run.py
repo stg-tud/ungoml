@@ -31,6 +31,7 @@ def get_lines() -> dict:
         file_line_tuples = list(map(lambda x : x.split(':')[:2], relevant_lines))
         dic = dict()
         for file, line in file_line_tuples:
+            file = file.split('/')[-1]
             if not file in dic.keys() : 
                 dic[file] = list()
             dic[file].append(line)
@@ -68,7 +69,7 @@ def run():
     for file, lines in file_lines_dictionary.items():
         output_dic[file] = dict()
         for line in lines:
-            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {args.file} predict -m WL2GNN'
+            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {file} predict -m WL2GNN'
             # Run container for each line 
             try: 
                 command = f"docker run --rm \
@@ -104,7 +105,7 @@ def run():
     # TBD
     print(colorful_json)
     with open(args.output, 'w') as file:
-        file.write(colorful_json)
+        file.write(formatted_json)
     
 
 if __name__ == "__main__":
