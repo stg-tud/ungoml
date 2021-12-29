@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "run.py",
             "console": "integratedTerminal",
-            "args" : ["-p", "./dummy_project", "-f", "main.go", "--package", "dummy_project"]
+            "args" : ["-p", "./dummy_project", "--package", "dummy_project"]
         }
     ]
 }
