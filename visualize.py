@@ -4,6 +4,7 @@ import argparse
 import json
 import matplotlib.pyplot as plt 
 import numpy as np
+import os
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
@@ -31,8 +32,9 @@ def visualize():
                 hbars = ax.barh(y_pos, classification_probabilities, align='center')
                 ax.set_yticks(y_pos, labels=classification_categories)
                 ax.invert_yaxis()  # labels read top-to-bottom
-                ax.set_xlabel('%s:%s' % (file, line))
-                ax.set_title('Classification of unsafe usages in Go code: %d' % (index + 1) )
+                # TODO: Percentages
+                ax.set_xlabel("Probability (0 - 1)")
+                ax.set_title('Classification label %d of unsafe usages in %s:%s' % (index + 1, file, line) )
 
                 plt.tight_layout()
                 fig.savefig(args.output + '/%s_%s_%d.svg' % (file, line, index))
@@ -40,7 +42,9 @@ def visualize():
 
 def run():
     parse_args()
-    # Check if 
+    # Check if output folder exists
+    if not os.path.isdir(args.output):
+        os.mkdir(args.output)
     visualize()
 
 if __name__ == "__main__":
