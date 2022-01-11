@@ -31,7 +31,7 @@ def get_lines() -> dict:
         file_line_tuples = list(map(lambda x : x.split(':')[:2], relevant_lines))
         dic = dict()
         for file, line in file_line_tuples:
-            file = file.split('/')[-1]
+            # file = file.split('/')[-1]
             if not file in dic.keys() : 
                 dic[file] = list()
             dic[file].append(line)
@@ -67,9 +67,13 @@ def run():
     # prepare docker args
     project_parent_dir = os.path.realpath('/'.join(args.project.split('/')[:-1]))
     for file, lines in file_lines_dictionary.items():
-        output_dic[file] = dict()
+        relative_file_path = file.split('/')[-1]
+        file_content : List[str] = None 
+        with open(file) as f:
+            file_content = f.readlines()
+        output_dic[relative_file_path] = dict()
         for line in lines:
-            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {file} predict -m WL2GNN'
+            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {relative_file_path} predict -m WL2GNN'
             # Run container for each line 
             try: 
                 command = f"docker run --rm \
@@ -89,12 +93,13 @@ def run():
                 # print("Line: %s" % line)
                 # JSON loads a JSON list 
                 evaluate_list = []
+                evaluate_list.append(file_content[int(line) - 1])
                 for dic in json.loads(stdout):
                     prediction : OrderedDict = OrderedDict(sorted(
                         dic.items(), key = lambda x : x[1], reverse = True 
                         )) 
                     evaluate_list.append(prediction)
-                output_dic[file][line] = evaluate_list
+                output_dic[relative_file_path][line] = evaluate_list
             except Exception as e:
                 print(e)
                 sys.exit(1)

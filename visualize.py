@@ -22,7 +22,8 @@ def visualize():
         # https://matplotlib.org/stable/gallery/lines_bars_and_markers/bar_label_demo.html
         for line, line_classifications_list in lines.items():
             # Prepare data 
-            for index, line_classifications in enumerate(line_classifications_list):
+            code = line_classifications_list[0] # [1:]
+            for index, line_classifications in enumerate(line_classifications_list[1:]):
                 y_pos = np.arange(len(line_classifications.keys()))
                 classification_probabilities = line_classifications.values()
                 classification_categories = line_classifications.keys()
@@ -34,7 +35,7 @@ def visualize():
                 ax.invert_yaxis()  # labels read top-to-bottom
                 # TODO: Percentages
                 ax.set_xlabel("Probability (0 - 1)")
-                ax.set_title('Classification label %d of unsafe usages in %s:%s' % (index + 1, file, line) )
+                ax.set_title('Classification label %d of unsafe usages in %s:%s\n%s' % (index + 1, file, line, code) )
 
                 plt.tight_layout()
                 fig.savefig(args.output + '/%s_%s_%d.svg' % (file, line, index))
