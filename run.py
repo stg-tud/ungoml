@@ -57,15 +57,15 @@ def setup():
     parse_args()
 
     # if project path ends with git, clone the directory 
-    if (args.project.endswith(".git")):
+    if (args.project.endswith(".git") or not os.path.exists(args.project)):
         temp_dir = tempfile.gettempdir()
         command = f'cd {temp_dir}; git clone {args.project}'
         with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
             stdout = process.communicate()[0].decode("utf-8")
             if process.returncode != 0:
-                raise Exception("Exit code from git clone stdout is not 0. Output: %s" % stdout )
+                raise Exception("Exit code from git clone stdout is not 0. Was this a git cloneable link or just an invalid path? Output: %s" % stdout )
         # change to cloned directory
-        args.project = temp_dir + args.project.split('/')[:-1].remove('.git')
+        args.project = temp_dir + args.project.split('/')[-1].replace('.git', '')
     
     # get real path of project dir
     # args.project = os.path.realpath(args.project)
