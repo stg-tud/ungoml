@@ -57,6 +57,27 @@ optional arguments:
                         Path of output visualized file
 ```
 
+## Running as a docker container
 
+You can run the analysis together with the visualizer with one docker container. 
 
+## Prerequisites
+
+You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest. 
+
+## Building the image
+
+`sudo docker build . -t unsafe-go-toolkit`
+
+## Running the image 
+
+To run the container, you'll need to mount the volume for the output directory. Set the `OUTPUT_DIRECTORY` variable to the output directory you want the .svg files and the report PDF file in. The arguments should be either the public cloneable git link or if left empty, the mounted `/project` folder of the container. There are additional keyworded arguments from the visualizer and analyser you can enter. (TODO)
+
+So the command would look either like this: 
+
+`sudo docker run --rm -v ${OUTPUT_DIRECTORY}:/output unsafe-go-toolkit git@github.com:Cortys/unsafe-go-classifier.git` 
+
+Or this (with the `PROJECT_DIRECTORY` variable set):
+
+`sudo docker run --rm -v ${PROJECT_DIRECTORY}/project -v ${OUTPUT_DIRECTORY}:/output unsafe-go-toolkit` 
 
