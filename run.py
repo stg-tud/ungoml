@@ -6,9 +6,11 @@ import os
 import json
 import subprocess
 import argparse
+import tempfile
 from pygments import highlight, lexers, formatters
 from typing import List
 from collections import OrderedDict
+
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
@@ -53,6 +55,18 @@ def parse_args():
 
 def setup():
     parse_args()
+
+    # if project path ends with git, clone the directory 
+    if (args.project.endswith(".git")):
+        temp_dir = tempfile.gettempdir()
+        command = f'cd {temp_dir}; git clone {args.project}'
+        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
+            stdout = process.communicate()[0].decode("utf-8")
+            if process.returncode != 0:
+                raise Exception("Exit code from git clone stdout is not 0. Output: %s" % stdout )
+        # change to cloned directory
+        args.project = temp_dir + args.project.split('/')[:-1].remove('.git')
+    
     # get real path of project dir
     # args.project = os.path.realpath(args.project)
     # go-geiger gives different results based on relative path and real path 
