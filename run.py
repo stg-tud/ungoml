@@ -44,7 +44,7 @@ def parse_args():
     global args
     # parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
     parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default="/project")
-    parser.add_argument("--package", help="Package name of Go file", required = True)
+    # parser.add_argument("--package", help="Package name of Go file", required = True)
     parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
     # TODO: Output style, readable, machine etc.
@@ -80,6 +80,7 @@ def run():
     
     # prepare docker args
     project_parent_dir = os.path.realpath('/'.join(args.project.split('/')[:-1]))
+    package = args.project.split('/')[-1]
     for file, lines in file_lines_dictionary.items():
         relative_file_path = file.split('/')[-1]
         file_content : List[str] = None 
@@ -87,7 +88,8 @@ def run():
             file_content = f.readlines()
         output_dic[relative_file_path] = dict()
         for line in lines:
-            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {args.package} --file {relative_file_path} predict -m WL2GNN'
+            # package = file_content[0].replace('package', '').strip()
+            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
             # Run container for each line 
             try: 
                 command = f"docker run --rm \
@@ -100,7 +102,7 @@ def run():
                 # print("Line: %s" % line)
                 # JSON loads a JSON list 
                 evaluate_list = []
-                evaluate_list.append(file_content[int(line) - 1].replace('\t', '').replace('\n', ''))
+                evaluate_list.append(file_content[int(line) - 1].strip())
                 for dic in json.loads(stdout):
                     prediction : OrderedDict = OrderedDict(sorted(
                         dic.items(), key = lambda x : x[1], reverse = True 
