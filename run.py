@@ -20,12 +20,9 @@ classifier_path : str = None
 
 def get_lines() -> dict: 
     try:
-        command = f"go-geiger --show-code {args.project}" 
         stdout : str = None 
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
-            stdout = process.communicate()[0].decode("utf-8")
-            # print(stdout)
-        # process = subprocess.run(executable="go-geiger", args=["--show-code", args.project], capture_output=True, check=True)
+        process = subprocess.run(args=["go-geiger", "--show-code", args.project], capture_output=True, check=True)
+        stdout = process.stdout.decode("utf-8")
         output_lines = stdout.split("\n")
         # grep command
         relevant_lines = list(filter( lambda x : "go:" in x , output_lines))
@@ -46,7 +43,7 @@ def get_lines() -> dict:
 def parse_args():
     global args
     # parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
-    parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in")
+    parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default="/project")
     parser.add_argument("--package", help="Package name of Go file", required = True)
     parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
@@ -57,16 +54,19 @@ def setup():
     parse_args()
 
     # if project path ends with git, clone the directory 
-    if (args.project.endswith(".git") or not os.path.exists(args.project)):
-        temp_dir = tempfile.gettempdir()
-        command = f'cd {temp_dir}; git clone {args.project}'
-        with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
-            stdout = process.communicate()[0].decode("utf-8")
-            if process.returncode != 0:
-                raise Exception("Exit code from git clone stdout is not 0. Was this a git cloneable link or just an invalid path? Output: %s" % stdout )
-        # change to cloned directory
-        args.project = temp_dir + args.project.split('/')[-1].replace('.git', '')
-    
+    try:
+        if not os.path.exists(args.project):
+            # disable terminal prompt for git ls-remote
+            modified_env = os.environ.copy()
+            modified_env["GIT_TERMINAL_PROMPT"] = "0"
+            process = subprocess.run(args=["git", "ls-remote", args.project], capture_output=True, check=True, env=modified_env)
+            temp_dir = tempfile.mkdtemp()
+            process = subprocess.run(args=["git", "clone", args.project], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
+            # change to cloned directory
+            args.project = temp_dir + args.project.split('/')[-1].replace('.git', '')
+    except subprocess.CalledProcessError as e:
+        raise ValueError(e)
+        
     # get real path of project dir
     # args.project = os.path.realpath(args.project)
     # go-geiger gives different results based on relative path and real path 
@@ -95,19 +95,12 @@ def run():
                     usgoc/pred:latest {docker_args}" 
                 stdout : str = None 
                 print("Running command: %s" % command)
-                with subprocess.Popen(command, stdout=subprocess.PIPE, stderr=None, shell=True) as process:
-                    stdout = process.communicate()[0].decode("utf-8")
-                    if process.returncode != 0:
-                        raise Exception("Exit code from docker run stdout is not 0. Output: %s" % stdout )
-                '''
-                process = subprocess.run(args = f"run --rm \
-                    -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {args.project}:/projects \
-                    usgoc/pred:latest {docker_args}", executable="docker", capture_output=True, check = True)
-                '''
+                process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
+                stdout = process.stdout.decode("utf-8")
                 # print("Line: %s" % line)
                 # JSON loads a JSON list 
                 evaluate_list = []
-                evaluate_list.append(file_content[int(line) - 1])
+                evaluate_list.append(file_content[int(line) - 1].replace('\t', '').replace('\n', ''))
                 for dic in json.loads(stdout):
                     prediction : OrderedDict = OrderedDict(sorted(
                         dic.items(), key = lambda x : x[1], reverse = True 
