@@ -1,24 +1,24 @@
-FROM debian
+FROM debian:bullseye
 
-ENV GOROOT /usr/lib/go
-ENV GOPATH /go
-ENV PATH /go/bin:$PATH
-
-ARG GOLANG_VERSION 1.14.3
-
+ENV GOPATH /go/
+ENV PATH $PATH:/go/bin/
 
 RUN apt-get update && \
   apt-get install -y -o APT::Install-Recommends=false -o APT::Install-Suggests=false \
   docker.io \
-  git 
+  git \
+  python3 \
+  wget \
+  ca-certificates \
+  golang \ 
+  python3-pip 
 
-# Install Go: https://stackoverflow.com/questions/52056387/how-to-install-go-in-alpine-linux
-RUN wget https://dl.google.com/go/go$GOLANG_VERSION.src.tar.gz && tar -C /usr/local -xzf go$GOLANG_VERSION.src.tar.gz
-RUN cd /usr/local/go/src && ./make.bash
-ENV PATH=$PATH:/usr/local/go/bin
-RUN rm go$GOLANG_VERSION.src.tar.gz
+# Install go-geiger
+RUN go get github.com/jlauinger/go-geiger
 
+COPY . /unsafe-toolkit
+WORKDIR  /unsafe-toolkit
 
-CMD [ "" ]
+RUN pip install -r requirements.txt
 
-ENTRYPOINT [ "/bin/bash" ]
+ENTRYPOINT [ "python3", "run.py" ]
