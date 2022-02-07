@@ -88,22 +88,23 @@ def run():
     file_lines_dictionary = get_lines()
     
     # prepare docker args
-    project_parent_dir = os.path.realpath('/'.join(args.project.split('/')[:-1]))
-    package = args.project.split('/')[-1]
+    
     for file, lines in file_lines_dictionary.items():
-        folder_path = ('/').join(file.split('/')[:-1])
+        parent_path = os.path.realpath(('/').join(file.split('/')[:-2]))
+        project_path = file.split('/')[-2]
         relative_file_path = file.split('/')[-1]
         file_content : List[str] = None 
         with open(file) as f:
             file_content = f.readlines()
+        package = get_package_name(file_content)
         output_dic[relative_file_path] = dict()
         for line in lines:
             # package = file_content[0].replace('package', '').strip()
-            docker_args = f'--project {args.project.split("/")[-1]} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
+            docker_args = f'--project {project_path} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
             # Run container for each line 
             try: 
                 command = f"docker run --rm \
-                    -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {project_parent_dir}:/projects \
+                    -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {parent_path}:/projects \
                     usgoc/pred:latest {docker_args}" 
                 stdout : str = None 
                 print("Running command: %s" % command)
@@ -132,6 +133,10 @@ def run():
     with open(args.output, 'w') as file:
         file.write(formatted_json)
     
+def get_package_name(file):
+    for line in file:
+        if "package" in line:
+            return line.replace("package ", '').strip()
 
 if __name__ == "__main__":
     run()
