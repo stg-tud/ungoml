@@ -1,7 +1,7 @@
 FROM debian:bullseye
 
 ENV GOPATH /go/
-ENV PATH $PATH:/go/bin/
+ENV PATH $PATH:/go/bin
 
 RUN apt-get update && \
   apt-get install -y -o APT::Install-Recommends=false -o APT::Install-Suggests=false \
