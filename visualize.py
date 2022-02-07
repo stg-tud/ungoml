@@ -13,11 +13,14 @@ def parse_args():
     global args
     parser.add_argument("-i", "--input", help="Path of input JSON file", required = True, type = str)
     parser.add_argument("-o", "--output", help="Path of output visualized folder", type = str, default = "output/")
+    parser.add_argument("-t", "--type", help="File type of output graphs", type = str, default = "png")
+    # TODO: Threshold and formats
     args = parser.parse_args()
 
 def visualize():
     dic = json.load(open(args.input))
-
+    output_files = []
+    
     for file, lines in dic.items():
         # https://matplotlib.org/stable/gallery/lines_bars_and_markers/bar_label_demo.html
         for line, line_classifications_list in lines.items():
@@ -38,7 +41,17 @@ def visualize():
                 ax.set_title('Classification label %d of unsafe usages in %s:%s\n%s' % (index + 1, file, line, code) )
 
                 plt.tight_layout()
-                fig.savefig(args.output + '/%s_%s_%d.svg' % (file, line, index))
+                filename = '%s_%s_%d.%s' % (file, line, index, args.type)
+                fig.savefig(args.output + filename)
+                output_files.append(filename)
+    
+    output_html = "<html>\n"
+    for file in output_files:
+        output_html += "<img src=%s>\n" % (file)
+    output_html += "</html>"
+    with open(args.output + 'report.html', 'w') as report:
+        report.write(output_html)
+
     
 
 def run():

@@ -21,7 +21,7 @@ classifier_path : str = None
 def get_lines() -> dict: 
     try:
         stdout : str = None 
-        process = subprocess.run(args=["go-geiger", "--show-code", args.project], capture_output=True, check=True)
+        process = subprocess.run(args=["go-geiger", "--show-code", '.'], cwd=args.project, capture_output=True, check=True)
         stdout = process.stdout.decode("utf-8")
         output_lines = stdout.split("\n")
         # grep command
@@ -36,8 +36,9 @@ def get_lines() -> dict:
             dic[file].append(line)
         return dic 
     except subprocess.CalledProcessError as e:
-        print(e)
-        sys.exit(-1)
+        print(e.stdout.decode("utf-8"))
+        print(e.stderr.decode("utf-8"))
+        raise(e)
     raise NotImplementedError()
 
 def parse_args():
@@ -48,6 +49,7 @@ def parse_args():
     parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
     # TODO: Output style, readable, machine etc.
+    parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
     args = parser.parse_args()
 
 def setup():
@@ -60,12 +62,19 @@ def setup():
             modified_env = os.environ.copy()
             modified_env["GIT_TERMINAL_PROMPT"] = "0"
             process = subprocess.run(args=["git", "ls-remote", args.project], capture_output=True, check=True, env=modified_env)
-            temp_dir = tempfile.mkdtemp()
+            temp_dir = tempfile.mkdtemp() + '/'
             process = subprocess.run(args=["git", "clone", args.project], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
-            # change to cloned directory
+            # TODO: go build
             args.project = temp_dir + args.project.split('/')[-1].replace('.git', '')
+            # change to cloned directory
+            print(args.project)
+            process = subprocess.run(args=["go", "build", "..."], capture_output=True, cwd=args.project)
+            
     except subprocess.CalledProcessError as e:
-        raise ValueError(e)
+        print(e.stdout.decode("utf-8"))
+        print(e.stderr.decode("utf-8"))
+        raise(e)
+        
         
     # get real path of project dir
     # args.project = os.path.realpath(args.project)
@@ -82,6 +91,7 @@ def run():
     project_parent_dir = os.path.realpath('/'.join(args.project.split('/')[:-1]))
     package = args.project.split('/')[-1]
     for file, lines in file_lines_dictionary.items():
+        folder_path = ('/').join(file.split('/')[:-1])
         relative_file_path = file.split('/')[-1]
         file_content : List[str] = None 
         with open(file) as f:
@@ -109,9 +119,10 @@ def run():
                         )) 
                     evaluate_list.append(prediction)
                 output_dic[relative_file_path][line] = evaluate_list
-            except Exception as e:
-                print(e)
-                sys.exit(1)
+            except subprocess.CalledProcessError as e:
+                print(e.stdout.decode("utf-8"))
+                print(e.stderr.decode("utf-8"))
+                raise(e)
         
 
     formatted_json = json.dumps(output_dic , indent=4)
