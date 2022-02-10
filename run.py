@@ -115,6 +115,9 @@ def run():
                 evaluate_list = []
                 evaluate_list.append(file_content[int(line) - 1].strip())
                 for dic in json.loads(stdout):
+                    if args.mode == "readable":
+                        for k, v in dic.items():
+                            dic[k] = round(v, 4)
                     prediction : OrderedDict = OrderedDict(sorted(
                         dic.items(), key = lambda x : x[1], reverse = True 
                         )) 
