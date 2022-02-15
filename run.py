@@ -1,6 +1,8 @@
 #!/usr/bin/env python3 
 # -*- coding: utf-8 -*-
 
+from code import interact
+from contextlib import redirect_stdout
 import sys
 import os
 import json
@@ -11,12 +13,14 @@ from pygments import highlight, lexers, formatters
 from typing import List
 from collections import OrderedDict
 import regex
+import progressbar
+import functools
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
 projects_dir : str = None 
 classifier_path : str = None 
-
+interactive : bool = False
 
 def get_lines() -> dict: 
     try:
@@ -53,8 +57,9 @@ def parse_args():
     args = parser.parse_args()
 
 def setup():
+    global interactive
     parse_args()
-
+    interactive = sys.stdout.isatty()
     # if project path ends with git, clone the directory 
     try:
         if not os.path.exists(args.project):
@@ -87,48 +92,60 @@ def run():
     output_dic = {}
     file_lines_dictionary = get_lines()
     
-    # prepare docker args
-    
-    for file, lines in file_lines_dictionary.items():
-        
-        project_path = get_project_path(file)
-        project_name = project_path.split('/')[-1]
-        parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
-        relative_file_path = file.split('/')[-1]
-        file_content : List[str] = None 
-        with open(file) as f:
-            file_content = f.readlines()
-        package = get_package_name(file)
-        output_dic[relative_file_path] = dict()
-        for line in lines:
-            # package = file_content[0].replace('package', '').strip()
-            docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
-            # Run container for each line 
-            try: 
-                command = f"docker run --rm \
-                    -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {parent_path}:/projects \
-                    usgoc/pred:latest {docker_args}" 
-                stdout : str = None 
-                # print("Running command: %s" % command)
-                process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
-                stdout = process.stdout.decode("utf-8")
-                # print("Line: %s" % line)
-                # JSON loads a JSON list 
-                evaluate_list = []
-                evaluate_list.append(file_content[int(line) - 1].strip())
-                for dic in json.loads(stdout):
-                    if args.mode == "readable":
-                        for k, v in dic.items():
-                            dic[k] = round(v, 4)
-                    prediction : OrderedDict = OrderedDict(sorted(
-                        dic.items(), key = lambda x : x[1], reverse = True 
-                        )) 
-                    evaluate_list.append(prediction)
-                output_dic[relative_file_path][line] = evaluate_list
-            except subprocess.CalledProcessError as e:
-                print(e.stdout.decode("utf-8"))
-                print(e.stderr.decode("utf-8"))
-                raise(e)
+    # get total item count
+    item_count = sum(map(len, file_lines_dictionary.values()))
+    if interactive:
+        print("Total lines to classify: %d" % (item_count))
+
+    classified_count = 0
+    with progressbar.ProgressBar(max_value=item_count, redirect_stdout=True) as bar:
+        # prepare docker args
+        for file, lines in file_lines_dictionary.items():
+            if interactive:
+                print(f"Running classifier for file: {file}")
+
+            project_path = get_project_path(file)
+            project_name = project_path.split('/')[-1]
+            parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
+            relative_file_path = file.split('/')[-1]
+            file_content : List[str] = None 
+            with open(file) as f:
+                file_content = f.readlines()
+            package = get_package_name(file)
+            output_dic[relative_file_path] = dict()
+            for line in lines:
+                if interactive:
+                    bar.update(classified_count)
+
+                # package = file_content[0].replace('package', '').strip()
+                docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
+                # Run container for each line 
+                try: 
+                    command = f"docker run --rm \
+                        -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {parent_path}:/projects \
+                        usgoc/pred:latest {docker_args}" 
+                    stdout : str = None 
+                    # print("Running command: %s" % command)
+                    process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
+                    stdout = process.stdout.decode("utf-8")
+                    # print("Line: %s" % line)
+                    # JSON loads a JSON list 
+                    evaluate_list = []
+                    evaluate_list.append(file_content[int(line) - 1].strip())
+                    for dic in json.loads(stdout):
+                        if args.mode == "readable":
+                            for k, v in dic.items():
+                                dic[k] = round(v, 4)
+                        prediction : OrderedDict = OrderedDict(sorted(
+                            dic.items(), key = lambda x : x[1], reverse = True 
+                            )) 
+                        evaluate_list.append(prediction)
+                    output_dic[relative_file_path][line] = evaluate_list
+                    classified_count += 1
+                except subprocess.CalledProcessError as e:
+                    print(e.stdout.decode("utf-8"))
+                    print(e.stderr.decode("utf-8"))
+                    raise(e)
         
 
     formatted_json = json.dumps(output_dic , indent=4)
@@ -150,7 +167,7 @@ def get_project_path(file_path : str):
 
 def get_package_name(file_path : str):
     package_path = None 
-    if ('pkg' in file_path):
+    if ('/go/pkg/' in file_path):
         package_path = file_path.split('/pkg/')[1]
         package_path = ('/').join(package_path.split('/')[1:-1])
         # remove version tag
