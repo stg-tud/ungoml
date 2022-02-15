@@ -10,7 +10,7 @@ import tempfile
 from pygments import highlight, lexers, formatters
 from typing import List
 from collections import OrderedDict
-
+import regex
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
@@ -90,24 +90,26 @@ def run():
     # prepare docker args
     
     for file, lines in file_lines_dictionary.items():
-        parent_path = os.path.realpath(('/').join(file.split('/')[:-2]))
-        project_path = file.split('/')[-2]
+        
+        project_path = get_project_path(file)
+        project_name = project_path.split('/')[-1]
+        parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
         relative_file_path = file.split('/')[-1]
         file_content : List[str] = None 
         with open(file) as f:
             file_content = f.readlines()
-        package = get_package_name(file_content)
+        package = get_package_name(file)
         output_dic[relative_file_path] = dict()
         for line in lines:
             # package = file_content[0].replace('package', '').strip()
-            docker_args = f'--project {project_path} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
+            docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
             # Run container for each line 
             try: 
                 command = f"docker run --rm \
                     -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {parent_path}:/projects \
                     usgoc/pred:latest {docker_args}" 
                 stdout : str = None 
-                print("Running command: %s" % command)
+                # print("Running command: %s" % command)
                 process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
                 stdout = process.stdout.decode("utf-8")
                 # print("Line: %s" % line)
@@ -135,11 +137,26 @@ def run():
     print(colorful_json)
     with open(args.output, 'w') as file:
         file.write(formatted_json)
+
+
+def get_project_path(file_path : str):
+    path_list = file_path.split('/')
     
-def get_package_name(file):
-    for line in file:
-        if "package" in line:
-            return line.replace("package ", '').strip()
+    for i in range(1, len(path_list) - 1):
+        possible_project_path = '/'.join(path_list[:-i])
+        directory = os.listdir(possible_project_path)
+        if ( "go.mod" in directory ):
+            return possible_project_path
+
+def get_package_name(file_path : str):
+    # project_path = get_project_path(file_path)
+    package_path = None 
+    if ('pkg' in file_path):
+        package_path = file_path.split('/pkg/')[1]
+        package_path = ('/').join(package_path.split('/')[1:-1])
+        # remove version tag
+        package_path = regex.sub(r'(.+?)(@.+?)(/.+)', r'\1\3', package_path)
+    return package_path
 
 if __name__ == "__main__":
     run()
