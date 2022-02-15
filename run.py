@@ -149,13 +149,16 @@ def get_project_path(file_path : str):
             return possible_project_path
 
 def get_package_name(file_path : str):
-    # project_path = get_project_path(file_path)
     package_path = None 
     if ('pkg' in file_path):
         package_path = file_path.split('/pkg/')[1]
         package_path = ('/').join(package_path.split('/')[1:-1])
         # remove version tag
         package_path = regex.sub(r'(.+?)(@.+?)(/.+)', r'\1\3', package_path)
+    else:
+        project_path = get_project_path(file_path)
+        # last item of splitted project path
+        package_path = project_path.split('/')[-1]
     return package_path
 
 if __name__ == "__main__":
