@@ -20,13 +20,18 @@ parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
 projects_dir : str = None 
 classifier_path : str = None 
-interactive : bool = False
+interactive, debug, container_mode  = (False, False, False)
 
 def get_lines() -> dict: 
     try:
-        stdout : str = None 
-        process = subprocess.run(args=["go-geiger", "--show-code", '.'], cwd=args.project, capture_output=True, check=True)
+        stdout : str = None
+        cwd = args.project
+        print(args)
+        print(cwd)
+        process = subprocess.run(args=["go-geiger", "--show-code", "."], cwd=cwd, capture_output=True, check=True)
         stdout = process.stdout.decode("utf-8")
+        if debug:
+            print(stdout)
         output_lines = stdout.split("\n")
         # grep command
         relevant_lines = list(filter( lambda x : "go:" in x , output_lines))
@@ -54,12 +59,17 @@ def parse_args():
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
     # TODO: Output style, readable, machine etc.
     parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
+    parser.add_argument("-d", "--debug", help="Debug mode")
     args = parser.parse_args()
 
 def setup():
-    global interactive
+    global interactive, debug, container_mode
     parse_args()
     interactive = sys.stdout.isatty()
+    debug =  os.getenv("DEBUG", 'False').lower() in ('true', '1', 't')
+    container_mode = os.getenv("CONTAINER_MODE", 'False').lower() in ('true', '1', 't')
+    if debug:
+        print(args)
     # if project path ends with git, clone the directory 
     try:
         if not os.path.exists(args.project):
@@ -112,7 +122,8 @@ def run():
             with open(file) as f:
                 file_content = f.readlines()
             package = get_package_name(file)
-            output_dic[relative_file_path] = dict()
+            package_file_path = "%s/%s" % (package, relative_file_path)
+            output_dic[package_file_path] = dict()
             for line in lines:
                 if interactive:
                     bar.update(classified_count)
@@ -120,12 +131,17 @@ def run():
                 # package = file_content[0].replace('package', '').strip()
                 docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
                 # Run container for each line 
-                try: 
+                try:
+                    parent_mount = f"-v {parent_path}:/projects"
+                    if container_mode and os.environ["GOPATH"] in parent_mount:
+                        # Parent mount is unnecessary since the same go_mod volume is loaded 
+                        parent_mount = ""
                     command = f"docker run --rm \
-                        -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build -v {parent_path}:/projects \
+                        -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build {parent_mount} \
                         usgoc/pred:latest {docker_args}" 
                     stdout : str = None 
-                    # print("Running command: %s" % command)
+                    if debug:
+                        print("Running command: %s" % command)
                     process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
                     stdout = process.stdout.decode("utf-8")
                     # print("Line: %s" % line)
@@ -140,7 +156,7 @@ def run():
                             dic.items(), key = lambda x : x[1], reverse = True 
                             )) 
                         evaluate_list.append(prediction)
-                    output_dic[relative_file_path][line] = evaluate_list
+                    output_dic[package_file_path][line] = evaluate_list
                     classified_count += 1
                 except subprocess.CalledProcessError as e:
                     print(e.stdout.decode("utf-8"))
@@ -149,9 +165,7 @@ def run():
         
 
     formatted_json = json.dumps(output_dic , indent=4)
-    colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
-    # TBD
-    print(colorful_json)
+    # colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
     with open(args.output, 'w') as file:
         file.write(formatted_json)
 
