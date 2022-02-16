@@ -129,7 +129,7 @@ def run():
                     bar.update(classified_count)
 
                 # package = file_content[0].replace('package', '').strip()
-                docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} predict -m WL2GNN'
+                docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
                 # Run container for each line 
                 try:
                     parent_mount = f"-v {parent_path}:/projects"
@@ -159,6 +159,7 @@ def run():
                     output_dic[package_file_path][line] = evaluate_list
                     classified_count += 1
                 except subprocess.CalledProcessError as e:
+                    print(e.args)
                     print(e.stdout.decode("utf-8"))
                     print(e.stderr.decode("utf-8"))
                     raise(e)
