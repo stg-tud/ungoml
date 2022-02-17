@@ -132,7 +132,7 @@ def run():
                 docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
                 # Run container for each line 
                 try:
-                    parent_mount = f"-v {parent_path}:/projects"
+                    parent_mount = f"-v {parent_path}:{parent_path}"
                     if container_mode and os.environ["GOPATH"] in parent_mount:
                         # Parent mount is unnecessary since the same go_mod volume is loaded 
                         parent_mount = ""
@@ -148,6 +148,8 @@ def run():
                     # JSON loads a JSON list 
                     evaluate_list = []
                     evaluate_list.append(file_content[int(line) - 1].strip())
+                    if debug:
+                        print(stdout)
                     for dic in json.loads(stdout):
                         if args.mode == "readable":
                             for k, v in dic.items():
@@ -166,7 +168,9 @@ def run():
         
 
     formatted_json = json.dumps(output_dic , indent=4)
-    # colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
+    colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
+    if debug:
+        print(colorful_json)
     with open(args.output, 'w') as file:
         file.write(formatted_json)
 
