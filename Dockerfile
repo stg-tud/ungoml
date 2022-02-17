@@ -3,7 +3,7 @@ FROM debian:bullseye
 ENV GOPATH /root/go
 ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
 ENV GO_VERSION 1.17.7
-ENV CONTAINER_MDOE true
+ENV CONTAINER_MODE true
 
 RUN apt-get update && \
   apt-get install -y -o APT::Install-Recommends=false -o APT::Install-Suggests=false \
@@ -30,4 +30,4 @@ RUN pip install -r requirements.txt
 
 COPY . /unsafe-toolkit
 
-ENTRYPOINT [ "python3", "run.py" ]
+ENTRYPOINT [ "python3", "evaluate.py" ]
