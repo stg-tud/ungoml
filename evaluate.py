@@ -14,7 +14,6 @@ from typing import List
 from collections import OrderedDict
 import regex
 import progressbar
-import functools
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
@@ -26,8 +25,6 @@ def get_lines() -> dict:
     try:
         stdout : str = None
         cwd = args.project
-        print(args)
-        print(cwd)
         process = subprocess.run(args=["go-geiger", "--show-code", "."], cwd=cwd, capture_output=True, check=True)
         stdout = process.stdout.decode("utf-8")
         if debug:
