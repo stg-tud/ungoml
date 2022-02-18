@@ -3,14 +3,69 @@
     // Zeigen Sie auf vorhandene Attribute, um die zugehörigen Beschreibungen anzuzeigen.
     // Weitere Informationen finden Sie unter https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
-    "configurations": [
+    "configurations": [    
         {
             "name": "Python: Test run.py",
             "type": "python",
             "request": "launch",
             "program": "run.py",
             "console": "integratedTerminal",
-            "args" : ["-p", "./dummy_project", "--package", "dummy_project"]
+            "args" : ["-p", "./dummy_project", "-m", "readable", "-d"]
+        },
+        {
+            "name": "Python: Test evaluate.py",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluate.py",
+            "console": "integratedTerminal",
+            "args" : ["-p", "./dummy_project", "-m", "readable"]
+        },
+        {
+            "name": "Python: Test visualize.py",
+            "type": "python",
+            "request": "launch",
+            "program": "visualize.py",
+            "console": "integratedTerminal",
+            "args" : ["-i" , "output.json" ]
+        },
+        {
+            "name": "Python: Test run.py with Git repository",
+            "type": "python",
+            "request": "launch",
+            "program": "run.py",
+            "console": "integratedTerminal",
+            "args" : ["-p", "https://github.com/grpc/grpc-go"]
+        },
+        {
+            "name": "Python: Test evaluate.py with Git repository",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluate.py",
+            "console": "integratedTerminal",
+            "args" : ["-p", "https://github.com/grpc/grpc-go"]
+        },
+        {
+            "name": "Python: Test evaluate.py with existing Git repository",
+            "type": "python",
+            "request": "launch",
+            "program": "evaluate.py",
+            "console": "integratedTerminal",
+            "args" : ["-p", "/tmp/tmps3w9y5gl/grpc-go"]
+        },
+        {
+            "name" : "Docker: Test docker container with dummy_project",
+            "type" : "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "python": {
+                "pathMappings": [
+                    {
+                        "localRoot": "${workspaceFolder}",
+                        "remoteRoot": "/unsafe-toolkit"
+                    }
+                ]
+            }
+            
         }
     ]
 }
