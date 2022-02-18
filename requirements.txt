@@ -1,2 +1,4 @@
 pygments
 matplotlib
+regex
+progressbar2
