@@ -14,12 +14,14 @@ from typing import List
 from collections import OrderedDict
 import regex
 import progressbar
+import logging
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
 projects_dir : str = None 
 classifier_path : str = None 
 interactive, debug, container_mode  = (False, False, False)
+logger : logging.Logger = None
 
 def get_lines() -> dict: 
     try:
@@ -27,8 +29,7 @@ def get_lines() -> dict:
         cwd = args.project
         process = subprocess.run(args=["go-geiger", "--show-code", "."], cwd=cwd, capture_output=True, check=True)
         stdout = process.stdout.decode("utf-8")
-        if debug:
-            print(stdout)
+        logger.debug(stdout)
         output_lines = stdout.split("\n")
         # grep command
         relevant_lines = list(filter( lambda x : "go:" in x , output_lines))
@@ -42,8 +43,8 @@ def get_lines() -> dict:
             dic[file].append(line)
         return dic 
     except subprocess.CalledProcessError as e:
-        print(e.stdout.decode("utf-8"))
-        print(e.stderr.decode("utf-8"))
+        logger.error(e.stdout.decode("utf-8"))
+        logger.error(e.stderr.decode("utf-8"))
         raise(e)
     raise NotImplementedError()
 
@@ -65,9 +66,11 @@ def setup():
     parse_args()
     interactive = sys.stdout.isatty()
     debug =  os.getenv("DEBUG", 'False').lower() in ('true', '1', 't') or args.debug
-    container_mode = os.getenv("CONTAINER_MODE", 'False').lower() in ('true', '1', 't')
+    logger = logging.getLogger()
     if debug:
-        print(args)
+        logger.setLevel("debug")
+    container_mode = os.getenv("CONTAINER_MODE", 'False').lower() in ('true', '1', 't')
+    logger.debug(args)
     # if project path ends with git, clone the directory 
     try:
         if not os.path.exists(args.project):
@@ -76,16 +79,18 @@ def setup():
             modified_env["GIT_TERMINAL_PROMPT"] = "0"
             process = subprocess.run(args=["git", "ls-remote", args.project], capture_output=True, check=True, env=modified_env)
             temp_dir = tempfile.mkdtemp() + '/'
-            process = subprocess.run(args=["git", "clone", args.project], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
+            # TODO: Get repository with minimal depth
+            logger.debug(f"Running git clone on {args.project}")
+            process = subprocess.run(args=["git", "clone", "–-depth", "1" ,args.project], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
             # TODO: go build
             args.project = temp_dir + args.project.split('/')[-1].replace('.git', '')
             # change to cloned directory
-            print(args.project)
-            process = subprocess.run(args=["go", "build", "..."], capture_output=True, cwd=args.project)
+        logger.debug(f"Running go build on {args.project}:")
+        process = subprocess.run(args=["go", "build", "..."], capture_output=True, cwd=args.project)
             
     except subprocess.CalledProcessError as e:
-        print(e.stdout.decode("utf-8"))
-        print(e.stderr.decode("utf-8"))
+        logger.error(e.stdout.decode("utf-8"))
+        logger.error(e.stderr.decode("utf-8"))
         raise(e)
         
         
@@ -103,14 +108,13 @@ def run():
     # get total item count
     item_count = sum(map(len, file_lines_dictionary.values()))
     if interactive:
-        print("Total lines to classify: %d" % (item_count))
+        logger.info("Total lines to classify: %d" % (item_count))
 
     classified_count = 0
     with progressbar.ProgressBar(max_value=item_count, redirect_stdout=True) as bar:
         # prepare docker args
         for file, lines in file_lines_dictionary.items():
-            if interactive:
-                print(f"Running classifier for file: {file}")
+            logger.info(f"Running classifier for file: {file}")
 
             project_path = get_project_path(file)
             project_name = project_path.split('/')[-1]
@@ -138,16 +142,14 @@ def run():
                         -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build {parent_mount} \
                         usgoc/pred:latest {docker_args}" 
                     stdout : str = None 
-                    if debug:
-                        print("Running command: %s" % command)
+                    logger.debug("Running command: %s" % command)
                     process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
                     stdout = process.stdout.decode("utf-8")
                     # print("Line: %s" % line)
                     # JSON loads a JSON list 
                     evaluate_list = []
                     evaluate_list.append(file_content[int(line) - 1].strip())
-                    if debug:
-                        print(stdout)
+                    logger.debug(stdout)
                     for dic in json.loads(stdout):
                         if args.mode == "readable":
                             for k, v in dic.items():
@@ -159,16 +161,15 @@ def run():
                     output_dic[package_file_path][line] = evaluate_list
                     classified_count += 1
                 except subprocess.CalledProcessError as e:
-                    print(e.args)
-                    print(e.stdout.decode("utf-8"))
-                    print(e.stderr.decode("utf-8"))
+                    logger.error(e.args)
+                    logger.error(e.stdout.decode("utf-8"))
+                    logger.error(e.stderr.decode("utf-8"))
                     raise(e)
         
 
     formatted_json = json.dumps(output_dic , indent=4)
     colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
-    if debug:
-        print(colorful_json)
+    logger.debug(colorful_json)
     if not os.path.exists(os.path.dirname(args.output)):
         os.mkdir(os.path.dirname(args.output))
     with open(args.output, 'w') as file:
