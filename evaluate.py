@@ -52,18 +52,19 @@ def parse_args():
     # parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
     parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default="/project")
     # parser.add_argument("--package", help="Package name of Go file", required = True)
-    parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output.json")
+    parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output/output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
     # TODO: Output style, readable, machine etc.
     parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
-    parser.add_argument("-d", "--debug", help="Debug mode")
+    parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
     args = parser.parse_args()
+    args.output = os.path.realpath(args.output) 
 
 def setup():
     global interactive, debug, container_mode
     parse_args()
     interactive = sys.stdout.isatty()
-    debug =  os.getenv("DEBUG", 'False').lower() in ('true', '1', 't')
+    debug =  os.getenv("DEBUG", 'False').lower() in ('true', '1', 't') or args.debug
     container_mode = os.getenv("CONTAINER_MODE", 'False').lower() in ('true', '1', 't')
     if debug:
         print(args)
@@ -168,6 +169,8 @@ def run():
     colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
     if debug:
         print(colorful_json)
+    if not os.path.exists(os.path.dirname(args.output)):
+        os.mkdir(os.path.dirname(args.output))
     with open(args.output, 'w') as file:
         file.write(formatted_json)
 
