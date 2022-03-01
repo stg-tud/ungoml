@@ -8,7 +8,7 @@ the reason and context of this usage.
 This toolkit should provide a wrapper / Docker container for
 <https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
-## Installation
+## Installation (Host)
 
 Install [unsafe-go-classifier]("https://github.com/Cortys/unsafe-go-classifier").
 
@@ -26,9 +26,32 @@ Install the required python packages:
 
 `pip install -r requirements.txt`
 
-## Running the analysis
+## Installation (Docker machine)
+
+Run the build command for the docker image or pull the image from the GitHub Container Registry (WIP): 
+`docker build . -t unsafe-go-toolkit`
+
+## Running the runner script for Docker
 
 Run the run.py file with the following arguments to export analysis data from a file/project:
+
+```
+usage: run.py [-h] -p PROJECT [-o OUTPUT] [-v VISUALIZER_ARGS] [-d]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROJECT, --project PROJECT
+                        Project path
+  -o OUTPUT, --output OUTPUT
+                        Output path
+  -v VISUALIZER_ARGS, --visualizer-args VISUALIZER_ARGS
+                        Arguments for the visualizer
+  -d, --debug
+```
+
+## Running the analysis
+
+Run the evaluate.py file with the following arguments to export analysis data from a file/project:
 
 ```
 usage: evaluate.py [-h] [-p PROJECT] [-o OUTPUT]
