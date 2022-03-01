@@ -31,7 +31,7 @@ Install the required python packages:
 Run the run.py file with the following arguments to export analysis data from a file/project:
 
 ```
-usage: run.py [-h] [-p PROJECT] [-o OUTPUT]
+usage: evaluate.py [-h] [-p PROJECT] [-o OUTPUT]
 
 optional arguments:
   -h, --help            show this help message and exit
