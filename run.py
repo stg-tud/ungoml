@@ -1,7 +1,6 @@
 #!/usr/bin/env python3 
 # -*- coding: utf-8 -*-
 
-from ast import parse
 import subprocess
 import argparse
 import sys
@@ -15,6 +14,7 @@ def parse_args():
     global args, unknown_args 
     parser.add_argument("-p", "--project", help="Project path", required=True)
     parser.add_argument("-o", "--output", help="Output path", default="./output/output.json")
+    parser.add_argument("-v", "--visualizer-args", help="Arguments for the visualizer", type=str, default=str())
     parser.add_argument("-d", "--debug", action='store_true')
     args, unknown_args = parser.parse_known_args()
 
@@ -34,12 +34,17 @@ def run():
         project_mount = '-v /tmp:/tmp'
     args.output =  os.path.realpath(args.output)
     restored_arg_string = ' '.join(sys.argv[1:])
+    interactive = "-it" if sys.stdout.isatty() else ""
     try: 
         process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
-            {project_mount} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output -it \
+            {project_mount} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
             unsafe-go-toolkit {restored_arg_string}", stdout=subprocess.PIPE, shell=True)
         for line in iter(process.stdout.readline, b''):  # With Python 3, you need iter(process.stdout.readline, b'') (i.e. the sentinel passed to iter needs to be a binary string, since b'' != '')
-            sys.stdout.buffer.write(line)
+            sys.stdout.buffer.write(line)        
+        # check if visualizer args are present 
+        process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
+            {project_mount} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
+            unsafe-go-toolkit {args.visualizer_args}", stdout=subprocess.PIPE, shell=True)
     except subprocess.CalledProcessError as e:
         print(e.stdout.decode("utf-8"))
         print(e.stderr.decode("utf-8"))
