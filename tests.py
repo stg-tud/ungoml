@@ -8,7 +8,8 @@ import json
 class TestRepositories(unittest.TestCase):
     logger : logging.Logger = None  
 
-    def TestRepositories(self):
+    @classmethod
+    def setUpClass(self):
         self.logger = logging.getLogger()
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
 
@@ -24,12 +25,19 @@ class TestRepositories(unittest.TestCase):
         return evaluate.run()
     
     def run_on_repository(self, repo_url : str):
-        subprocess.run(args = f"python3 run.py -p {repo_url}", check = True, shell = True)
-        with json.load("./output/output.json") as output_dic:
-            return output_dic
+        try:
+            process = subprocess.run(args = f"python3 run.py -p {repo_url}", check = True, shell = True, capture_output = True)
+            with open("./output/output.json") as f:
+                return json.load(f)
+        except subprocess.CalledProcessError as e:
+            self.logger.error(e.stdout)
+            self.logger.error(e.stderr)
+            raise e
+        
 
     def test_unsafer_repository_git(self):
         """
+        
         Tests unsafer repository with GitHub Link
         """
         output_dic = self.evaluate_on_repository("https://github.com/stg-tud/go-safer.git")
