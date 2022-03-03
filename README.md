@@ -8,24 +8,6 @@ the reason and context of this usage.
 This toolkit should provide a wrapper / Docker container for
 <https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
-## Installation (Host)
-
-Install [unsafe-go-classifier]("https://github.com/Cortys/unsafe-go-classifier").
-
-Install [go-geiger]("https://github.com/stg-tud/go-geiger").
-
-Clone this repository with:
-
-`git clone git@github.com:stg-tud/unsafe-toolkit.git`
-
-Enter the directory:
-
-`cd unsafe-toolkit`
-
-Install the required python packages:
-
-`pip install -r requirements.txt`
-
 ## Installation (Docker machine)
 
 Run the build command for the docker image or pull the image from the GitHub Container Registry (WIP): 
@@ -49,7 +31,9 @@ optional arguments:
   -d, --debug
 ```
 
-## Running the analysis
+The visualizer args should be given in quotes and will then be passed in the container. Note that the output should be in the mounted output directory, because the run.py script mounts only that directory to the host files system. 
+
+## Arguments for the evaluation
 
 Run the evaluate.py file with the following arguments to export analysis data from a file/project:
 
@@ -64,7 +48,7 @@ optional arguments:
                         Output file of JSON file
 ```
 
-## Running the visualizer
+## Arguments for the visualizer
 
 Run the visualize.py with the following arguments to visualize your acquired analysis:
 
@@ -79,10 +63,13 @@ optional arguments:
                         Path of output visualized folder
 ```
 
-## Running as a docker container
+## Testing
 
-You can run the analysis together with the visualizer with one docker container.
+This project can be tested using the tests.py file and the following command:
 
+`python3 -m unittest tests.py`
+
+You can also run the tests in Visual Studio Code, the test settings have been preconfigured.
 ## Prerequisites
 
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
@@ -90,15 +77,3 @@ You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pr
 ## Building the image
 
 `sudo docker build . -t unsafe-go-toolkit`
-
-## Running the image
-
-To run the container, you'll need to mount the volume for the output directory. Set the `OUTPUT_DIRECTORY` variable to the output directory you want the .svg files and the report PDF file in. The arguments should be either the public cloneable git link or if left empty, the mounted `/project` folder of the container. There are additional keyworded arguments from the visualizer and analyser you can enter. (TODO)
-
-So the command would look either like this:
-
-`sudo docker run --rm -v ${OUTPUT_DIRECTORY}:/output unsafe-go-toolkit git@github.com:Cortys/unsafe-go-classifier.git`
-
-Or this (with the `PROJECT_DIRECTORY` variable set):
-
-`sudo docker run --rm -v ${PROJECT_DIRECTORY}/project -v ${OUTPUT_DIRECTORY}:/output unsafe-go-toolkit`
