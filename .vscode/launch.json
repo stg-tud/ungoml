@@ -10,7 +10,7 @@
             "request": "launch",
             "program": "run.py",
             "console": "integratedTerminal",
-            "args" : ["-p", "./dummy_project", "-m", "readable", "-d"]
+            "args" : ["-p", "./dummy_project", "-m", "readable", "--visualizer-args", "\"--type png\""]
         },
         {
             "name": "Python: Test evaluate.py",
@@ -34,7 +34,7 @@
             "request": "launch",
             "program": "run.py",
             "console": "integratedTerminal",
-            "args" : ["-p", "https://github.com/grpc/grpc-go"]
+            "args" : ["-p", "https://github.com/stg-tud/go-safer.git", "-m readable"]
         },
         {
             "name": "Python: Test evaluate.py with Git repository",
@@ -42,7 +42,7 @@
             "request": "launch",
             "program": "evaluate.py",
             "console": "integratedTerminal",
-            "args" : ["-p", "https://github.com/grpc/grpc-go"]
+            "args" : ["-p", "https://github.com/stg-tud/go-safer.git", "-d"]
         },
         {
             "name": "Python: Test evaluate.py with existing Git repository",
@@ -53,18 +53,7 @@
             "args" : ["-p", "/tmp/tmps3w9y5gl/grpc-go"]
         },
         {
-            "name" : "Docker: Test docker container with dummy_project",
-            "type" : "docker",
-            "request": "launch",
-            "preLaunchTask": "docker-run: debug",
-            "python": {
-                "pathMappings": [
-                    {
-                        "localRoot": "${workspaceFolder}",
-                        "remoteRoot": "/unsafe-toolkit"
-                    }
-                ]
-            }
+            "name" : "Python: Test tests.py"
             
         }
     ]
