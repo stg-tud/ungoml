@@ -23,6 +23,11 @@ interactive, debug, container_mode  = (False, False, False)
 logger : logging.Logger = None
 
 def get_lines() -> dict: 
+    """ Runs go-geiger on the project argument and fetches the lines with unsafe unsages.
+
+    Returns:
+        dict: The dictionary with the line numbers of unsafe usages mapped to the corresponding files.
+    """
     try:
         stdout : str = None
         cwd = args.project
@@ -45,9 +50,11 @@ def get_lines() -> dict:
         logger.error(e.stdout.decode("utf-8"))
         logger.error(e.stderr.decode("utf-8"))
         raise(e)
-    raise NotImplementedError()
 
 def setup_args():
+    """
+    Adds the arguments for the argument parser
+    """
     # parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
     parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default="/project")
     # parser.add_argument("--package", help="Package name of Go file", required = True)
@@ -59,6 +66,11 @@ def setup_args():
     
 
 def setup():
+    """
+    
+    Parses the args and downloads the repository with Git if needed.
+
+    """
     global interactive, debug, container_mode, logger, args
     logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
     if __name__ == "__main__":
@@ -96,13 +108,6 @@ def setup():
         logger.error(e.stderr.decode("utf-8"))
         raise(e)
         
-        
-    # get real path of project dir
-    # args.project = os.path.realpath(args.project)
-    # go-geiger gives different results based on relative path and real path 
-
-    classifier_path = None 
-
 def run():
     setup()
     output_dic = {}
@@ -176,7 +181,16 @@ def run():
     return output_dic
 
 
-def get_project_path(file_path : str):
+def get_project_path(file_path : str) -> str:
+    """ 
+    Gets the project folder path which contains the go.mod file.
+
+    Args:
+        file_path (str): Path of a file / folder which is inside the wanted project folder
+
+    Returns:
+        str: The project folder path
+    """
     path_list = file_path.split('/')
     
     for i in range(1, len(path_list) - 1):
@@ -185,7 +199,16 @@ def get_project_path(file_path : str):
         if ( "go.mod" in directory ):
             return possible_project_path
 
-def get_package_name(file_path : str):
+def get_package_name(file_path : str) -> str:
+    """
+    Get fully qualified package name which is the package name in the .go file prepended by the relative path to the project folder path.
+
+    Args:
+        file_path (str): Path to the .go file 
+
+    Returns:
+        str: The fully qualified package name
+    """
     package_path = None 
     if ('/go/pkg/' in file_path):
         package_path = file_path.split('/pkg/')[1]
