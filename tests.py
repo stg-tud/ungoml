@@ -24,6 +24,14 @@ class TestRepositories(unittest.TestCase):
         evaluate.args.project = repo_url 
         return evaluate.run()
     
+    def clone_repository(self, repo_url : str):
+        modified_env = os.environ.copy()
+        modified_env["GIT_TERMINAL_PROMPT"] = "0"
+        temp_dir = tempfile.mkdtemp() + '/'
+        self.logger.info(f"Running git clone on {repo_url}")
+        process = subprocess.run(args=["git", "clone", "--depth", "1" , repo_url], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
+        return temp_dir
+
     def run_on_repository(self, repo_url : str):
         try:
             process = subprocess.run(args = f"python3 run.py -p {repo_url}", check = True, shell = True, capture_output = True)
@@ -34,10 +42,8 @@ class TestRepositories(unittest.TestCase):
             self.logger.error(e.stderr)
             raise e
         
-
     def test_unsafer_repository_git(self):
-        """
-        
+        """        
         Tests unsafer repository with GitHub Link
         """
         output_dic = self.evaluate_on_repository("https://github.com/stg-tud/go-safer.git")
@@ -62,6 +68,22 @@ class TestRepositories(unittest.TestCase):
         Tests unsafer repository with GitHub Link
         """
         output_dic = self.run_on_repository("https://github.com/stg-tud/go-safer.git")
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_unsafer_repository_local_runner(self):
+        """
+        Tests local unsafer repository with GitHub Link
+        """
+        temp_dir = self.clone_repository("https://github.com/stg-tud/go-safer.git")
+        output_dic = self.evaluate_on_repository(temp_dir)
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_unsafer_repository_local(self):
+        """
+        Tests local unsafer repository with GitHub Link
+        """
+        temp_dir = self.clone_repository("https://github.com/stg-tud/go-safer.git")
+        output_dic = self.run_on_repository(temp_dir)
         self.assertGreater(len(output_dic.items()), 0)
 
 if __name__ == '__main__':
