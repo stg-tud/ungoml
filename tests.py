@@ -4,6 +4,8 @@ import logging
 import evaluate
 import argparse
 import json 
+import tempfile
+import os
 
 class TestRepositories(unittest.TestCase):
     logger : logging.Logger = None  
@@ -30,7 +32,7 @@ class TestRepositories(unittest.TestCase):
         temp_dir = tempfile.mkdtemp() + '/'
         self.logger.info(f"Running git clone on {repo_url}")
         process = subprocess.run(args=["git", "clone", "--depth", "1" , repo_url], capture_output=True, check=True, env=modified_env, cwd=temp_dir)
-        return temp_dir
+        return temp_dir + repo_url.split('/')[-1].replace('.git', '')
 
     def run_on_repository(self, repo_url : str):
         try:
@@ -60,6 +62,7 @@ class TestRepositories(unittest.TestCase):
         """
         Tests unsafer repository with GitHub Link
         """
+        self.logger.warn("This is a large repository. Expect the test to take a longe time and 400+ lines to analyze.")
         output_dic = self.evaluate_on_repository("git@github.com:grpc/grpc-go.git")
         self.assertGreater(len(output_dic.items()), 0)
 
@@ -75,7 +78,7 @@ class TestRepositories(unittest.TestCase):
         Tests local unsafer repository with GitHub Link
         """
         temp_dir = self.clone_repository("https://github.com/stg-tud/go-safer.git")
-        output_dic = self.evaluate_on_repository(temp_dir)
+        output_dic = self.run_on_repository(temp_dir)
         self.assertGreater(len(output_dic.items()), 0)
 
     def test_unsafer_repository_local(self):
@@ -83,7 +86,7 @@ class TestRepositories(unittest.TestCase):
         Tests local unsafer repository with GitHub Link
         """
         temp_dir = self.clone_repository("https://github.com/stg-tud/go-safer.git")
-        output_dic = self.run_on_repository(temp_dir)
+        output_dic = self.evaluate_on_repository(temp_dir)
         self.assertGreater(len(output_dic.items()), 0)
 
 if __name__ == '__main__':
