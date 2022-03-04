@@ -15,7 +15,7 @@ from collections import OrderedDict
 import regex
 import logging
 
-parser : argparse.ArgumentParser = argparse.ArgumentParser()
+parser : argparse.ArgumentParser = None 
 args : argparse.Namespace = None 
 projects_dir : str = None 
 classifier_path : str = None 
@@ -55,6 +55,8 @@ def setup_args():
     """
     Adds the arguments for the argument parser
     """
+    global parser
+    parser = argparse.ArgumentParser()
     # parser.add_argument("-f", "--file", help="File name of Go file to analyze", required=True)
     parser.add_argument( "-p", "--project", help="Path of package where the Go file lies in", default="/project")
     # parser.add_argument("--package", help="Package name of Go file", required = True)
