@@ -10,9 +10,10 @@ import subprocess
 import argparse
 import tempfile
 from pygments import highlight, lexers, formatters
-from typing import List
+from typing import List, Dict, Tuple
 from collections import OrderedDict
 import regex
+
 import logging
 
 parser : argparse.ArgumentParser = None 
@@ -51,6 +52,15 @@ def get_lines() -> dict:
         logger.error(e.stderr.decode("utf-8"))
         raise(e)
 
+def get_lines_detailed():
+    """ 
+    Runs go-geiger on the directories containing main.go. Will be called when running go-geiger on the go.mod directory returns no analyzed lines.
+
+    Raises:
+        NotImplementedError: _description_
+    """
+    raise NotImplementedError()
+
 def setup_args():
     """
     Adds the arguments for the argument parser
@@ -62,10 +72,9 @@ def setup_args():
     # parser.add_argument("--package", help="Package name of Go file", required = True)
     parser.add_argument("-o", "--output", help="Output file of JSON file", required = False, default = "output/output.json")
     # parser.add_argument("-c", "classifier-path", help="Path of the directory of the classifier", default="../unsafe-go-classifier")
-    # TODO: Output style, readable, machine etc.
     parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
     parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
-    
+    # TODO: Add parallel task number
 
 def setup():
     """
@@ -122,56 +131,10 @@ def run():
 
     classified_count = 0
     # prepare docker args
-    for file, lines in file_lines_dictionary.items():
-        logger.info(f"Running classifier for file: {file}. Classified lines: {classified_count}/{item_count}")
-        project_path = get_project_path(file)
-        project_name = project_path.split('/')[-1]
-        parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
-        relative_file_path = file.split('/')[-1]
-        file_content : List[str] = None 
-        with open(file) as f:
-            file_content = f.readlines()
-        package = get_package_name(file)
-        package_file_path = "%s/%s" % (package, relative_file_path)
-        output_dic[package_file_path] = dict()
-        for line in lines:
-            # package = file_content[0].replace('package', '').strip()
-            docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
-            # Run container for each line 
-            try:
-                parent_mount = f"-v {parent_path}:{parent_path}"
-                if container_mode and os.environ["GOPATH"] in parent_mount:
-                    # Parent mount is unnecessary since the same go_mod volume is loaded 
-                    parent_mount = ""
-                command = f"docker run --rm \
-                    -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build {parent_mount} \
-                    usgoc/pred:latest {docker_args}" 
-                stdout : str = None 
-                logger.debug("Running command: %s" % command)
-                process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
-                stdout = process.stdout.decode("utf-8")
-                # print("Line: %s" % line)
-                # JSON loads a JSON list 
-                evaluate_list = []
-                evaluate_list.append(file_content[int(line) - 1].strip())
-                logger.debug(stdout)
-                for dic in json.loads(stdout):
-                    if args.mode == "readable":
-                        for k, v in dic.items():
-                            dic[k] = round(v, 4)
-                    prediction : OrderedDict = OrderedDict(sorted(
-                        dic.items(), key = lambda x : x[1], reverse = True 
-                        )) 
-                    evaluate_list.append(prediction)
-                output_dic[package_file_path][line] = evaluate_list
-                classified_count += 1
-            except subprocess.CalledProcessError as e:
-                logger.error(e.args)
-                logger.error(e.stdout.decode("utf-8"))
-                logger.error(e.stderr.decode("utf-8"))
-                raise(e)
-        
-
+    for file_tuple in file_lines_dictionary.items():
+        evaluation_tuple = evaluate_file(file_tuple)
+        output_dic[evaluation_tuple[0]] = evaluation_tuple[1]
+    
     formatted_json = json.dumps(output_dic , indent=4)
     colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
     logger.debug(colorful_json)
@@ -181,6 +144,62 @@ def run():
         file.write(formatted_json)
 
     return output_dic
+
+def evaluate_file(file_tuple : Tuple[str, List[int]], **kwargs) -> Tuple[str, Dict]: 
+    file = file_tuple[0]
+    lines : List[int] = file_tuple[1]
+
+    logger.info(f"Running classifier for file: {file}. Classified lines: {classified_count}/{item_count}")
+    project_path = get_project_path(file)
+    project_name = project_path.split('/')[-1]
+    parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
+    relative_file_path = file.split('/')[-1]
+    file_content : List[str] = None 
+    with open(file) as f:
+        file_content = f.readlines()
+    package = get_package_name(file)
+    
+    evaluation_tuple : Tuple[str, Dict]
+    package_file_path = "%s/%s" % (package, relative_file_path)
+    evaluation_tuple[0] = package_file_path
+    evaluation_tuple[1] = dict()
+    for line in lines:
+        # package = file_content[0].replace('package', '').strip()
+        docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
+        # Run container for each line 
+        try:
+            parent_mount = f"-v {parent_path}:{parent_path}"
+            if container_mode and os.environ["GOPATH"] in parent_mount:
+                # Parent mount is unnecessary since the same go_mod volume is loaded 
+                parent_mount = ""
+            command = f"docker run --rm \
+                -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build {parent_mount} \
+                usgoc/pred:latest {docker_args}" 
+            stdout : str = None 
+            logger.debug("Running command: %s" % command)
+            process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
+            stdout = process.stdout.decode("utf-8")
+            # print("Line: %s" % line)
+            # JSON loads a JSON list 
+            evaluate_list = []
+            evaluate_list.append(file_content[int(line) - 1].strip())
+            logger.debug(stdout)
+            for dic in json.loads(stdout):
+                if args.mode == "readable":
+                    for k, v in dic.items():
+                        dic[k] = round(v, 4)
+                prediction : OrderedDict = OrderedDict(sorted(
+                    dic.items(), key = lambda x : x[1], reverse = True 
+                    )) 
+                evaluate_list.append(prediction)
+            evaluation_tuple[1][line] = evaluate_list
+            classified_count += 1
+        except subprocess.CalledProcessError as e:
+            logger.error(e.args)
+            logger.error(e.stdout.decode("utf-8"))
+            logger.error(e.stderr.decode("utf-8"))
+            raise(e)
+    return evaluation_tuple
 
 
 def get_project_path(file_path : str) -> str:
