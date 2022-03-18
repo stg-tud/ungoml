@@ -10,13 +10,44 @@ This toolkit should provide a wrapper / Docker container for
 
 ## Installation (Docker machine)
 
+### Prerequisites
+
+You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
 Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
-Run the build command for the docker image or pull the image from the GitHub Container Registry (WIP): 
-`docker build . -t unsafe-go-toolkit`
+
+### Building the image
+
+Execute the following command to build the image:
+
+`sudo docker build . -t unsafe-go-toolkit`
 
 ## Running the runner script for Docker
 
 Run the run.py file with the following arguments to export analysis data from a file/project:
+
+```
+usage: run.py [-h] -p PROJECT [-o OUTPUT] [-v VISUALIZER_ARGS] [-d]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -p PROJECT, --project PROJECT
+                        Project path
+  -o OUTPUT, --output OUTPUT
+                        Output path
+  -v VISUALIZER_ARGS, --visualizer-args VISUALIZER_ARGS
+                        Arguments for the visualizer
+  -d, --debug
+```
+
+The visualizer args should be given in quotes and will then be passed in the container. Note that the output should be in the mounted output directory, because the run.py script mounts only that directory to the host files system. 
+
+Example usage: 
+
+`run.py -p git@github.com:jlauinger/go-safer.git`
+
+## Arguments for the evaluation
+
+Run the evaluate.py file with the following arguments to export analysis data from a file/project:
 
 ```
 usage: evaluate.py [-h] [-p PROJECT] [-o OUTPUT] [-m MODE] [-d] [-c CONCURRENT_THREADS]
@@ -33,22 +64,8 @@ optional arguments:
                         Number of concurrent evaluation containers the script should run
 ```
 
-The visualizer args should be given in quotes and will then be passed in the container. Note that the output should be in the mounted output directory, because the run.py script mounts only that directory to the host files system. 
 
-## Arguments for the evaluation
-
-Run the evaluate.py file with the following arguments to export analysis data from a file/project:
-
-```
-usage: evaluate.py [-h] [-p PROJECT] [-o OUTPUT]
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -p PROJECT, --project PROJECT
-                        Path of package where the Go file lies in
-  -o OUTPUT, --output OUTPUT
-                        Output file of JSON file
-```
+`evaluate.py -p git@github.com:jlauinger/go-safer.git`
 
 ## Arguments for the visualizer
 
@@ -65,6 +82,9 @@ optional arguments:
                         Path of output visualized folder
 ```
 
+`visualize.py -i output/output.json /output`
+
+
 ## Usage examples
 
 TODO: unsafer repository
@@ -76,10 +96,4 @@ This project can be tested using the tests.py file and the following command:
 `python3 -m unittest tests.py`
 
 You can also run the tests in Visual Studio Code, the test settings have been preconfigured.
-## Prerequisites
 
-You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-
-## Building the image
-
-`sudo docker build . -t unsafe-go-toolkit`
