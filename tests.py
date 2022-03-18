@@ -52,17 +52,36 @@ class TestRepositories(unittest.TestCase):
         self.assertGreater(len(output_dic.items()), 0)
     
     def test_unsafer_repository_git_ssh(self):
-            """
-            Tests unsafer repository with GitHub Link
-            """
-            output_dic = self.evaluate_on_repository("git@github.com:stg-tud/go-safer.git")
-            self.assertGreater(len(output_dic.items()), 0)
+        """
+        Tests unsafer repository with GitHub Link
+        """
+        output_dic = self.evaluate_on_repository("git@github.com:stg-tud/go-safer.git")
+        evaluate.args.concurrent_threads = 1
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_unsafer_repository_git_ssh_concurrent(self):
+        """
+        Tests unsafer repository with GitHub Link
+        """
+        output_dic = self.evaluate_on_repository("git@github.com:stg-tud/go-safer.git")
+        evaluate.args.concurrent_threads = 6
+        self.assertGreater(len(output_dic.items()), 0)
 
     def test_grpc_repository_git_ssh(self):
         """
         Tests unsafer repository with GitHub Link
         """
         self.logger.warn("This is a large repository. Expect the test to take a longe time and 400+ lines to analyze.")
+        evaluate.args.concurrent_threads = 1
+        output_dic = self.evaluate_on_repository("git@github.com:grpc/grpc-go.git")
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_grpc_repository_git_ssh_concurrent(self):
+        """
+        Tests unsafer repository with GitHub Link
+        """
+        self.logger.warn("This is a large repository. Expect the test to take a longe time and 400+ lines to analyze.")
+        evaluate.args.concurrent_threads = 6
         output_dic = self.evaluate_on_repository("git@github.com:grpc/grpc-go.git")
         self.assertGreater(len(output_dic.items()), 0)
 
@@ -87,6 +106,20 @@ class TestRepositories(unittest.TestCase):
         """
         temp_dir = self.clone_repository("https://github.com/stg-tud/go-safer.git")
         output_dic = self.evaluate_on_repository(temp_dir)
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_gitlabshell_repository_local(self):
+        """
+        Tests Gitlab Shell which contains several go.mod 
+        """
+        output_dic = self.evaluate_on_repository("https://gitlab.com/gitlab-org/gitlab-shell.git")
+        self.assertGreater(len(output_dic.items()), 0)
+
+    def test_gitlabshell_repository_runner(self):
+        """
+        Tests Gitlab Shell which contains several go.mod 
+        """
+        output_dic = self.run_on_repository("https://gitlab.com/gitlab-org/gitlab-shell.git")
         self.assertGreater(len(output_dic.items()), 0)
 
 if __name__ == '__main__':

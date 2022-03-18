@@ -1,8 +1,6 @@
 #!/usr/bin/env python3 
 # -*- coding: utf-8 -*-
 
-from code import interact
-from contextlib import redirect_stdout
 import sys
 import os
 import json
@@ -13,7 +11,7 @@ from pygments import highlight, lexers, formatters
 from typing import List, Dict, Tuple
 from collections import OrderedDict
 import regex
-
+from multiprocessing.pool import ThreadPool as Pool
 import logging
 
 parser : argparse.ArgumentParser = None 
@@ -22,8 +20,9 @@ projects_dir : str = None
 classifier_path : str = None 
 interactive, debug, container_mode  = (False, False, False)
 logger : logging.Logger = None
+item_count : int = None 
 
-def get_lines() -> dict: 
+def get_lines(cwd : str = None) -> dict: 
     """ Runs go-geiger on the project argument and fetches the lines with unsafe unsages.
 
     Returns:
@@ -31,7 +30,8 @@ def get_lines() -> dict:
     """
     try:
         stdout : str = None
-        cwd = args.project
+        if cwd == None:
+            cwd = args.project
         process = subprocess.run(args=["go-geiger", "--show-code", "."], cwd=cwd, capture_output=True, check=True)
         stdout = process.stdout.decode("utf-8")
         logger.debug(stdout)
@@ -52,14 +52,18 @@ def get_lines() -> dict:
         logger.error(e.stderr.decode("utf-8"))
         raise(e)
 
-def get_lines_detailed():
+def get_lines_detailed(cwd : str):
     """ 
     Runs go-geiger on the directories containing main.go. Will be called when running go-geiger on the go.mod directory returns no analyzed lines.
 
     Raises:
         NotImplementedError: _description_
     """
-    raise NotImplementedError()
+    dic = {}
+    for dirpath, dirnames, filenames in os.walk(cwd):
+        if "main.go" in filenames:
+            dic = {**dic, **get_lines(dirpath)} 
+    return dic
 
 def setup_args():
     """
@@ -75,6 +79,7 @@ def setup_args():
     parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
     parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
     # TODO: Add parallel task number
+    parser.add_argument("-c", "--concurrent-threads", help="Number of concurrent evaluation containers the script should run", default=2)
 
 def setup():
     """
@@ -120,21 +125,33 @@ def setup():
         raise(e)
         
 def run():
+    global item_count
     setup()
     output_dic = {}
     file_lines_dictionary = get_lines()
+    if len(file_lines_dictionary.items()) == 0:
+        file_lines_dictionary = get_lines_detailed(args.project)
     
+    if len(file_lines_dictionary.items()) == 0:
+        raise Exception("No lines to classify have been found!")
+
     # get total item count
     item_count = sum(map(len, file_lines_dictionary.values()))
     if interactive:
         logger.info("Total lines to classify: %d" % (item_count))
 
     classified_count = 0
-    # prepare docker args
+    # prepare pool
+    pool = Pool(args.concurrent_threads)
+
     for file_tuple in file_lines_dictionary.items():
-        evaluation_tuple = evaluate_file(file_tuple)
-        output_dic[evaluation_tuple[0]] = evaluation_tuple[1]
+        # classified_count = sum(map(len, output_dic.values()))
+        # TODO: Parallelize this
+        pool.apply_async(evaluate_file, (file_tuple, output_dic))
     
+    pool.close()
+    pool.join()
+
     formatted_json = json.dumps(output_dic , indent=4)
     colorful_json = highlight(str.encode(formatted_json, 'UTF-8'), lexers.JsonLexer(), formatters.TerminalFormatter())
     logger.debug(colorful_json)
@@ -145,11 +162,10 @@ def run():
 
     return output_dic
 
-def evaluate_file(file_tuple : Tuple[str, List[int]], **kwargs) -> Tuple[str, Dict]: 
+def evaluate_file(file_tuple : Tuple[str, List[int]], output_dic : Dict):
     file = file_tuple[0]
     lines : List[int] = file_tuple[1]
-
-    logger.info(f"Running classifier for file: {file}. Classified lines: {classified_count}/{item_count}")
+    
     project_path = get_project_path(file)
     project_name = project_path.split('/')[-1]
     parent_path = os.path.realpath(('/').join(project_path.split('/')[:-1]))
@@ -159,10 +175,9 @@ def evaluate_file(file_tuple : Tuple[str, List[int]], **kwargs) -> Tuple[str, Di
         file_content = f.readlines()
     package = get_package_name(file)
     
-    evaluation_tuple : Tuple[str, Dict]
     package_file_path = "%s/%s" % (package, relative_file_path)
-    evaluation_tuple[0] = package_file_path
-    evaluation_tuple[1] = dict()
+    output_dic[package_file_path] = dict()
+    
     for line in lines:
         # package = file_content[0].replace('package', '').strip()
         docker_args = f'--project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
@@ -192,14 +207,14 @@ def evaluate_file(file_tuple : Tuple[str, List[int]], **kwargs) -> Tuple[str, Di
                     dic.items(), key = lambda x : x[1], reverse = True 
                     )) 
                 evaluate_list.append(prediction)
-            evaluation_tuple[1][line] = evaluate_list
-            classified_count += 1
+            output_dic[package_file_path][line] = evaluate_list
         except subprocess.CalledProcessError as e:
             logger.error(e.args)
             logger.error(e.stdout.decode("utf-8"))
             logger.error(e.stderr.decode("utf-8"))
             raise(e)
-    return evaluation_tuple
+    classified_count = sum(map(len, output_dic.values()))
+    logger.info(f"Finished running classifier for file: {file_tuple[0]}. Classified lines: {classified_count}/{item_count}")
 
 
 def get_project_path(file_path : str) -> str:
