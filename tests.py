@@ -122,5 +122,15 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.run_on_repository("https://gitlab.com/gitlab-org/gitlab-shell.git")
         self.assertGreater(len(output_dic.items()), 0)
 
-if __name__ == '__main__':
-    unittest.main()
+class TestFunctions(unittest.TestCase):
+    def test_get_package_name(self):
+        package_name = evaluate.get_package_name("/root/go/pkg/mod/github.com/rs/xid@v1.3.0/id.go")
+        self.assertEqual(package_name ,"github.com/rs/xid")
+    
+    def test_get_package_name_2(self):
+        package_name = evaluate.get_package_name("/mnt/c/Users/antonio.zhu/go/pkg/mod/google.golang.org/protobuf@v1.25.0/internal/strs/strings_unsafe.go")
+        self.assertEqual(package_name ,"google.golang.org/protobuf/internal/strs") 
+
+    def test_get_package_name_3(self):
+        package_name = evaluate.get_package_name("/mnt/c/Users/antonio.zhu/go/pkg/mod/github.com/rs/zerolog@v1.26.2-0.20220227173336-263b0bde3672/fields.go")
+        self.assertEqual(package_name ,"github.com/rs/zerolog") 

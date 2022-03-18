@@ -18,8 +18,18 @@ def parse_args():
     parser.add_argument("-d", "--debug", action='store_true')
     args, unknown_args = parser.parse_known_args()
 
+def check_images():
+    process = subprocess.run(args=["docker", "images"], capture_output=True, check=True)
+    stdout = process.stdout.decode("UTF-8")
+    if ("unsafe-go-toolkit" not in stdout):
+        raise ValueError("unsafe-go-toolkit not in image list! Please build the image according to the README")
+    if ("usgoc/pred" not in stdout):
+        raise ValueError("usgoc/pred not in image list! Please pull the image according to the README")
+    return 
+    
 def run():
     parse_args()
+    check_images()
     # restore real path and restore arg_string
     project_mount : str = None 
     if os.path.exists(args.project):
