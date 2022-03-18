@@ -67,6 +67,7 @@ class TestRepositories(unittest.TestCase):
         evaluate.args.concurrent_threads = 6
         self.assertGreater(len(output_dic.items()), 0)
 
+    @unittest.skip("Large test")
     def test_grpc_repository_git_ssh(self):
         """
         Tests unsafer repository with GitHub Link
@@ -76,6 +77,7 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.evaluate_on_repository("git@github.com:grpc/grpc-go.git")
         self.assertGreater(len(output_dic.items()), 0)
 
+    @unittest.skip("Large test")
     def test_grpc_repository_git_ssh_concurrent(self):
         """
         Tests unsafer repository with GitHub Link
@@ -108,6 +110,7 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.evaluate_on_repository(temp_dir)
         self.assertGreater(len(output_dic.items()), 0)
 
+    @unittest.skip("Large test")
     def test_gitlabshell_repository_local(self):
         """
         Tests Gitlab Shell which contains several go.mod 
@@ -115,6 +118,7 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.evaluate_on_repository("https://gitlab.com/gitlab-org/gitlab-shell.git")
         self.assertGreater(len(output_dic.items()), 0)
 
+    @unittest.skip("Large test")
     def test_gitlabshell_repository_runner(self):
         """
         Tests Gitlab Shell which contains several go.mod 
