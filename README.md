@@ -10,6 +10,7 @@ This toolkit should provide a wrapper / Docker container for
 
 ## Installation (Docker machine)
 
+Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
 Run the build command for the docker image or pull the image from the GitHub Container Registry (WIP): 
 `docker build . -t unsafe-go-toolkit`
 
@@ -18,17 +19,18 @@ Run the build command for the docker image or pull the image from the GitHub Con
 Run the run.py file with the following arguments to export analysis data from a file/project:
 
 ```
-usage: run.py [-h] -p PROJECT [-o OUTPUT] [-v VISUALIZER_ARGS] [-d]
+usage: evaluate.py [-h] [-p PROJECT] [-o OUTPUT] [-m MODE] [-d] [-c CONCURRENT_THREADS]
 
 optional arguments:
   -h, --help            show this help message and exit
   -p PROJECT, --project PROJECT
-                        Project path
+                        Path of package where the Go file lies in
   -o OUTPUT, --output OUTPUT
-                        Output path
-  -v VISUALIZER_ARGS, --visualizer-args VISUALIZER_ARGS
-                        Arguments for the visualizer
-  -d, --debug
+                        Output file of JSON file
+  -m MODE, --mode MODE  Mode of output file, choose between the strings readable or machine
+  -d, --debug           Debug mode
+  -c CONCURRENT_THREADS, --concurrent-threads CONCURRENT_THREADS
+                        Number of concurrent evaluation containers the script should run
 ```
 
 The visualizer args should be given in quotes and will then be passed in the container. Note that the output should be in the mounted output directory, because the run.py script mounts only that directory to the host files system. 
@@ -62,6 +64,10 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Path of output visualized folder
 ```
+
+## Usage examples
+
+TODO: unsafer repository
 
 ## Testing
 

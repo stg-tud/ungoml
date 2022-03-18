@@ -12,6 +12,7 @@ from typing import List, Dict, Tuple
 from collections import OrderedDict
 import regex
 from multiprocessing.pool import ThreadPool as Pool
+import multiprocessing
 import logging
 
 parser : argparse.ArgumentParser = None 
@@ -79,7 +80,7 @@ def setup_args():
     parser.add_argument("-m", "--mode", help="Mode of output file, choose between the strings readable or machine", required=False, default="machine")
     parser.add_argument("-d", "--debug", help="Debug mode", action="store_true")
     # TODO: Add parallel task number
-    parser.add_argument("-c", "--concurrent-threads", help="Number of concurrent evaluation containers the script should run", default=2)
+    parser.add_argument("-c", "--concurrent-threads", help="Number of concurrent evaluation containers the script should run", default=multiprocessing.cpu_count())
 
 def setup():
     """
