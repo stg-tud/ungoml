@@ -13,7 +13,8 @@ RUN apt-get update && \
   wget \
   ca-certificates \
   python3-pip \
-  sudo 
+  sudo \
+  ssh
 
 RUN apt-get clean
 
@@ -27,6 +28,8 @@ COPY requirements.txt /unsafe-toolkit/
 WORKDIR  /unsafe-toolkit
 
 RUN pip install -r requirements.txt
+
+RUN git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no'
 
 COPY . /unsafe-toolkit
 
