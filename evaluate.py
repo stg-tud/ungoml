@@ -1,6 +1,7 @@
 #!/usr/bin/env python3 
 # -*- coding: utf-8 -*-
 
+from importlib.util import module_for_loader
 import sys
 import os
 import json
@@ -247,6 +248,18 @@ def get_package_name(file_path : str) -> str:
         str: The fully qualified package name
     """
     package_path = None 
+    project_path = get_project_path(file_path)
+    go_mod_path = project_path + "/go.mod"
+    module_name : str = "" 
+    if (os.path.isfile(go_mod_path)):
+        try: 
+        # get package name 
+            with open(go_mod_path) as file:
+                module_name = list(filter(lambda x : "module" in x, file.readlines()))[0].split()[1]
+        except PermissionError as e:
+            logger.warn("Could not read go.mod file:", e) 
+        except Exception as e:
+            logger.fatal(e)
     if ('/go/pkg/' in file_path):
         package_path = file_path.split('/pkg/')[1]
         package_path = ('/').join(package_path.split('/')[1:-1])
@@ -257,6 +270,12 @@ def get_package_name(file_path : str) -> str:
         project_path = get_project_path(file_path)
         # last item of splitted project path
         package_path = project_path.split('/')[-1]
+    if module_name not in package_path:
+        unqualified_module_name = module_name.split('/')[-1]
+        # search for unqualified module name in package path
+        unqualified_index = package_path.split('/').index(unqualified_module_name)
+        # append correct module name with fork package name
+        package_path = module_name + '/' + '/'.join(package_path.split('/')[unqualified_index + 1 :])
     return package_path
 
 if __name__ == "__main__":

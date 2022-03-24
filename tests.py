@@ -9,11 +9,13 @@ import os
 
 class TestRepositories(unittest.TestCase):
     logger : logging.Logger = None  
+    go_path : str = None 
 
     @classmethod
     def setUpClass(self):
         self.logger = logging.getLogger()
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+        self.go_path = os.environ["GOPATH"]
 
     def setUp(self) -> None:
         evaluate.setup_args()
@@ -110,7 +112,6 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.evaluate_on_repository(temp_dir)
         self.assertGreater(len(output_dic.items()), 0)
 
-    @unittest.skip("Large test")
     def test_gitlabshell_repository_local(self):
         """
         Tests Gitlab Shell which contains several go.mod 
@@ -118,7 +119,6 @@ class TestRepositories(unittest.TestCase):
         output_dic = self.evaluate_on_repository("https://gitlab.com/gitlab-org/gitlab-shell.git")
         self.assertGreater(len(output_dic.items()), 0)
 
-    @unittest.skip("Large test")
     def test_gitlabshell_repository_runner(self):
         """
         Tests Gitlab Shell which contains several go.mod 
@@ -127,14 +127,27 @@ class TestRepositories(unittest.TestCase):
         self.assertGreater(len(output_dic.items()), 0)
 
 class TestFunctions(unittest.TestCase):
+    logger : logging.Logger = None  
+    go_path : str = None 
+
+    @classmethod
+    def setUpClass(self):
+        self.logger = logging.getLogger()
+        logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+        self.go_path = os.environ["GOPATH"]
+
     def test_get_package_name(self):
-        package_name = evaluate.get_package_name("/root/go/pkg/mod/github.com/rs/xid@v1.3.0/id.go")
+        package_name = evaluate.get_package_name(f"{self.go_path}/pkg/mod/github.com/rs/xid@v1.3.0/id.go")
         self.assertEqual(package_name ,"github.com/rs/xid")
     
     def test_get_package_name_2(self):
-        package_name = evaluate.get_package_name("/mnt/c/Users/antonio.zhu/go/pkg/mod/google.golang.org/protobuf@v1.25.0/internal/strs/strings_unsafe.go")
+        package_name = evaluate.get_package_name(f"{self.go_path}/pkg/mod/google.golang.org/protobuf@v1.25.0/internal/strs/strings_unsafe.go")
         self.assertEqual(package_name ,"google.golang.org/protobuf/internal/strs") 
 
     def test_get_package_name_3(self):
-        package_name = evaluate.get_package_name("/mnt/c/Users/antonio.zhu/go/pkg/mod/github.com/rs/zerolog@v1.26.2-0.20220227173336-263b0bde3672/fields.go")
+        package_name = evaluate.get_package_name(f"{self.go_path}/pkg/mod/github.com/rs/zerolog@v1.26.2-0.20220227173336-263b0bde3672/fields.go")
         self.assertEqual(package_name ,"github.com/rs/zerolog") 
+
+    def test_get_forked_package_name(self):
+        package_name = evaluate.get_package_name(f"{self.go_path}/pkg/mod/github.com/drakkan/crypto@v0.0.0-20220215181150-74469fa99b22/internal/subtle/aliasing.go")
+        self.assertEqual(package_name ,"golang.org/x/crypto/internal/subtle") 
