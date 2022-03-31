@@ -14,7 +14,7 @@ def parse_args():
     global args, unknown_args 
     parser.add_argument("-p", "--project", help="Project path", required=True)
     parser.add_argument("-o", "--output", help="Output path", default="./output/output.json")
-    parser.add_argument("-v", "--visualizer-args", help="Arguments for the visualizer, use of input argument is not recommended", type=str, default="")
+    parser.add_argument("-v", "--visualizer-args", help="Arguments for the visualizer as a string, use of input argument is not recommended", type=str, default="")
     parser.add_argument("-d", "--debug", action='store_true')
     args, unknown_args = parser.parse_known_args()
 
@@ -57,9 +57,9 @@ def run():
             sys.stdout.buffer.write(line)        
         # check if visualizer args are present 
         process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
-            {project_mount} -v {args.output}:{args.output} -v {os.path.dirname(os.path.dirname(args.output))}:/unsafe-toolkit/output \
+            {project_mount} -v {args.output}:{args.output} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output \
             unsafe-go-toolkit visualize.py -i {args.output} {args.visualizer_args}", stdout=subprocess.PIPE, shell=True)
-        print(process.stdout.decode("utf-8"))
+        # print(process.stdout.decode("utf-8"))
     except subprocess.CalledProcessError as e:
         print(e.stdout.decode("utf-8"))
         print(e.stderr.decode("utf-8"))

@@ -25,6 +25,7 @@ If you want to pull SSH repositories with this tool, make sure you have working 
 
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
 Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
+Also, make sure you execute the script with a user which has access to Docker.
 
 ### Building the image
 
@@ -54,7 +55,7 @@ The visualizer args should be given in quotes and will then be passed in the con
 
 Example usage: 
 
-`run.py -p https://github.com/jlauinger/go-safer.git`
+`./run.py -p https://github.com/jlauinger/go-safer.git`
 
 ## Arguments for the evaluation
 
@@ -76,7 +77,7 @@ optional arguments:
 ```
 
 
-`evaluate.py -p git@github.com:jlauinger/go-safer.git`
+`./evaluate.py -p git@github.com:jlauinger/go-safer.git`
 
 ## Arguments for the visualizer
 
@@ -93,14 +94,18 @@ optional arguments:
                         Path of output visualized folder
 ```
 
-`visualize.py -i output/output.json /output`
+`./visualize.py -i output/output.json /output`
 
 
 ## Usage examples
 
-To analyze a repository simply run: 
+This example runs the analysis on the go-safer repository and saves the data on a custom file location.
 
-`run.py -p https://github.com/jlauinger/go-safer.git`
+`./run.py -p https://github.com/jlauinger/go-safer.git -o output/go_safer.json`
+
+This example runs the same analysis as above, but with custom visualizer args.
+
+`./run.py -p https://github.com/jlauinger/go-safer.git -o output/go_safer.json --visualizer-args "-t svg"`
 
 ## Testing
 
