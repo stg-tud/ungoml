@@ -33,4 +33,5 @@ RUN git config --global core.sshCommand 'ssh -o UserKnownHostsFile=/dev/null -o 
 
 COPY . /unsafe-toolkit
 
-ENTRYPOINT [ "python3", "evaluate.py" ]
+ENTRYPOINT [ "python3" ]
+CMD ["evaluate.py"]
