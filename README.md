@@ -8,6 +8,17 @@ the reason and context of this usage.
 This toolkit should provide a wrapper / Docker container for
 <https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
+## Installation (local)
+
+### Prerequisites
+
+You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
+Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
+
+Also, install go-geiger and make sure it's located in one of your path variables.
+To install the Python dependencies, run the following command `pip install -r requirements.txt`
+If you want to pull SSH repositories with this tool, make sure you have working SSH access. 
+
 ## Installation (Docker machine)
 
 ### Prerequisites
@@ -43,7 +54,7 @@ The visualizer args should be given in quotes and will then be passed in the con
 
 Example usage: 
 
-`run.py -p git@github.com:jlauinger/go-safer.git`
+`run.py -p https://github.com/jlauinger/go-safer.git`
 
 ## Arguments for the evaluation
 
@@ -87,7 +98,9 @@ optional arguments:
 
 ## Usage examples
 
-TODO: unsafer repository
+To analyze a repository simply run: 
+
+`run.py -p https://github.com/jlauinger/go-safer.git`
 
 ## Testing
 
