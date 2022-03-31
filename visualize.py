@@ -55,7 +55,7 @@ def visualize():
     output_html += "</html>"
     with open(args.output + 'report.html', 'w') as report:
         report.write(output_html)
-
+    print(f"Generated graphics for {len(output_files)} files.")
     
 
 def run():
