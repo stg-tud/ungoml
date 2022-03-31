@@ -57,9 +57,10 @@ def run():
             sys.stdout.buffer.write(line)        
         # check if visualizer args are present 
         process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
-            {project_mount} -v {args.output}:{args.output} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output \
+            {project_mount} -v {args.output}:{args.output} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
             unsafe-go-toolkit visualize.py -i {args.output} {args.visualizer_args}", stdout=subprocess.PIPE, shell=True)
-        # print(process.stdout.decode("utf-8"))
+        for line in iter(process.stdout.readline, b''):  # With Python 3, you need iter(process.stdout.readline, b'') (i.e. the sentinel passed to iter needs to be a binary string, since b'' != '')
+            sys.stdout.buffer.write(line)   
     except subprocess.CalledProcessError as e:
         print(e.stdout.decode("utf-8"))
         print(e.stderr.decode("utf-8"))
