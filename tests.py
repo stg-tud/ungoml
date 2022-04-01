@@ -134,6 +134,9 @@ class TestFunctions(unittest.TestCase):
     def setUpClass(self):
         self.logger = logging.getLogger()
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.DEBUG)
+        evaluate.setup_args()
+        evaluate.args, _ = evaluate.parser.parse_known_args()
+        evaluate.logger = logging.getLogger() 
         self.go_path = os.environ["GOPATH"]
 
     def test_get_package_name(self):
@@ -151,3 +154,7 @@ class TestFunctions(unittest.TestCase):
     def test_get_forked_package_name(self):
         package_name = evaluate.get_package_name(f"{self.go_path}/pkg/mod/github.com/drakkan/crypto@v0.0.0-20220215181150-74469fa99b22/internal/subtle/aliasing.go")
         self.assertEqual(package_name ,"golang.org/x/crypto/internal/subtle") 
+
+    def test_get_lines_detailed(self):
+        dic = evaluate.get_lines_detailed(f"{self.go_path}/pkg/mod/github.com/drakkan/crypto@v0.0.0-20220215181150-74469fa99b22")
+        self.assertGreaterEqual(len(dic.keys()), 0)

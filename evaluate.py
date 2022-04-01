@@ -61,11 +61,17 @@ def get_lines_detailed(cwd : str):
     Raises:
         NotImplementedError: _description_
     """
-    dic = {}
-    for dirpath, dirnames, filenames in os.walk(cwd):
-        if "main.go" in filenames:
+    try:
+        process = subprocess.run(args = "rg -l 'func main'", shell=True, capture_output=True, check=True, cwd = cwd)
+        filenames = process.stdout.decode("utf-8").split('\n')
+        dic = {}
+        for dirpath in map(os.path.dirname, map(lambda x : cwd + '/' + x, filenames)):
             dic = {**dic, **get_lines(dirpath)} 
-    return dic
+        return dic
+    except subprocess.CalledProcessError as e:
+        logger.error(e.stdout.decode("utf-8"))
+        logger.error(e.stderr.decode("utf-8"))
+        raise(e)
 
 def setup_args():
     """
