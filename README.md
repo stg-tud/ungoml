@@ -115,3 +115,4 @@ This project can be tested using the tests.py file and the following command:
 
 You can also run the tests in Visual Studio Code, the test settings have been preconfigured.
 
+Some tests are version and package specific, so the paths for the tests should be updated to the corresponding packages.
