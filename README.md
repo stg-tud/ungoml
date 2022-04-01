@@ -47,8 +47,8 @@ optional arguments:
   -o OUTPUT, --output OUTPUT
                         Output path
   -v VISUALIZER_ARGS, --visualizer-args VISUALIZER_ARGS
-                        Arguments for the visualizer
-  -d, --debug
+                        Arguments for the visualizer as a string, use of input argument is not recommended
+  -d, --debug           Verbose mode
 ```
 
 The visualizer args should be given in quotes and will then be passed in the container. Note that the output should be in the mounted output directory, because the run.py script mounts only that directory to the host files system. 
@@ -84,7 +84,7 @@ optional arguments:
 Run the visualize.py with the following arguments to visualize your acquired analysis:
 
 ```
-usage: visualize.py [-h] -i INPUT [-o OUTPUT]
+usage: visualize.py [-h] -i INPUT [-o OUTPUT] [-t TYPE]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -92,6 +92,7 @@ optional arguments:
                         Path of input JSON file
   -o OUTPUT, --output OUTPUT
                         Path of output visualized folder
+  -t TYPE, --type TYPE  File type of output graphs
 ```
 
 `./visualize.py -i output/output.json /output`
