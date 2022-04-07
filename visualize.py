@@ -5,6 +5,7 @@ import json
 import matplotlib.pyplot as plt 
 import numpy as np
 import os
+import pathlib 
 
 parser : argparse.ArgumentParser = argparse.ArgumentParser()
 args : argparse.Namespace = None 
@@ -42,6 +43,9 @@ def visualize():
 
                 plt.tight_layout()
                 filename = '%s_%s_%d.%s' % (file, line, index, args.type)
+                dirname = os.path.dirname(args.output + filename)
+                if not os.path.exists(dirname):
+                    pathlib.Path(dirname).mkdir(parents=True, exist_ok=True)
                 fig.savefig(args.output + filename)
                 output_files.append(filename)
     
@@ -51,7 +55,7 @@ def visualize():
     output_html += "</html>"
     with open(args.output + 'report.html', 'w') as report:
         report.write(output_html)
-
+    print(f"Generated graphics for {len(output_files)} files.")
     
 
 def run():

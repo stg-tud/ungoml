@@ -14,18 +14,22 @@ def parse_args():
     global args, unknown_args 
     parser.add_argument("-p", "--project", help="Project path", required=True)
     parser.add_argument("-o", "--output", help="Output path", default="./output/output.json")
-    parser.add_argument("-v", "--visualizer-args", help="Arguments for the visualizer", type=str, default=str())
+    parser.add_argument("-v", "--visualizer-args", help="Arguments for the visualizer as a string, use of input argument is not recommended", type=str, default="")
     parser.add_argument("-d", "--debug", action='store_true')
     args, unknown_args = parser.parse_known_args()
 
 def check_images():
-    process = subprocess.run(args=["docker", "images"], capture_output=True, check=True)
-    stdout = process.stdout.decode("UTF-8")
-    if ("unsafe-go-toolkit" not in stdout):
-        raise ValueError("unsafe-go-toolkit not in image list! Please build the image according to the README")
-    if ("ghcr.io/cortys/usgoc/pred" not in stdout):
-        raise ValueError("ghcr.io/cortys/usgoc/pred not in image list! Please pull the image according to the README")
-    return 
+    try: 
+        process = subprocess.run(args=["docker", "images"], capture_output=True, check=True)
+        stdout = process.stdout.decode("UTF-8")
+        if ("unsafe-go-toolkit" not in stdout):
+            raise ValueError("unsafe-go-toolkit not in image list! Please build the image according to the README")
+        if ("ghcr.io/cortys/usgoc/pred" not in stdout):
+            raise ValueError("ghcr.io/cortys/usgoc/pred not in image list! Please pull the image according to the README")
+        return 
+    except TypeError:
+        return 
+        
     
 def run():
     parse_args()
@@ -48,13 +52,15 @@ def run():
     try: 
         process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
             {project_mount} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
-            unsafe-go-toolkit {restored_arg_string}", stdout=subprocess.PIPE, shell=True)
+            unsafe-go-toolkit evaluate.py {restored_arg_string}", stdout=subprocess.PIPE, shell=True)
         for line in iter(process.stdout.readline, b''):  # With Python 3, you need iter(process.stdout.readline, b'') (i.e. the sentinel passed to iter needs to be a binary string, since b'' != '')
             sys.stdout.buffer.write(line)        
         # check if visualizer args are present 
         process = subprocess.Popen(f"docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build \
-            {project_mount} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
-            unsafe-go-toolkit {args.visualizer_args}", stdout=subprocess.PIPE, shell=True)
+            {project_mount} -v {args.output}:{args.output} -v {os.path.dirname(args.output)}:/unsafe-toolkit/output {interactive} \
+            unsafe-go-toolkit visualize.py -i {args.output} {args.visualizer_args}", stdout=subprocess.PIPE, shell=True)
+        for line in iter(process.stdout.readline, b''):  # With Python 3, you need iter(process.stdout.readline, b'') (i.e. the sentinel passed to iter needs to be a binary string, since b'' != '')
+            sys.stdout.buffer.write(line)   
     except subprocess.CalledProcessError as e:
         print(e.stdout.decode("utf-8"))
         print(e.stderr.decode("utf-8"))
