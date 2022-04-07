@@ -23,8 +23,8 @@ def check_images():
     stdout = process.stdout.decode("UTF-8")
     if ("unsafe-go-toolkit" not in stdout):
         raise ValueError("unsafe-go-toolkit not in image list! Please build the image according to the README")
-    if ("usgoc/pred" not in stdout):
-        raise ValueError("usgoc/pred not in image list! Please pull the image according to the README")
+    if ("ghcr.io/cortys/usgoc/pred" not in stdout):
+        raise ValueError("ghcr.io/cortys/usgoc/pred not in image list! Please pull the image according to the README")
     return 
     
 def run():

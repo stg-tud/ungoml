@@ -1,8 +1,9 @@
-FROM debian:bullseye
+#FROM debian:bullseye
+FROM golang:1.18.0-bullseye
 
-ENV GOPATH /root/go
-ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
-ENV GO_VERSION 1.17.7
+#ENV GOPATH /root/go
+#ENV PATH $PATH:/usr/local/go/bin:$GOPATH/bin
+#ENV GO_VERSION 1.17.7
 ENV CONTAINER_MODE true
 
 RUN apt-get update && \
@@ -14,14 +15,14 @@ RUN apt-get update && \
   ca-certificates \
   python3-pip \
   sudo \
-  ssh
+  ssh \
+  && apt-get clean
+#RUN apt-get clean
 
-RUN apt-get clean
-
-RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && tar xvf go${GO_VERSION}.linux-amd64.tar.gz && sudo mv go /usr/local
+#RUN wget https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz && tar xvf go${GO_VERSION}.linux-amd64.tar.gz && sudo mv go /usr/local
 
 # Install go-geiger
-RUN go get github.com/jlauinger/go-geiger
+RUN go install github.com/jlauinger/go-geiger@latest
 
 COPY requirements.txt /unsafe-toolkit/
 

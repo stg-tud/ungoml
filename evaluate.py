@@ -191,7 +191,7 @@ def evaluate_file(file_tuple : Tuple[str, List[int]], output_dic : Dict):
                 parent_mount = ""
             command = f"docker run --rm \
                 -v go_mod:/root/go/pkg/mod -v go_cache:/root/.cache/go-build {parent_mount} \
-                usgoc/pred:latest {docker_args}" 
+                ghcr.io/cortys/usgoc/pred:latest {docker_args}" 
             stdout : str = None 
             logger.debug("Running command: %s" % command)
             process = subprocess.run(args = command, capture_output=True, check = True, shell=True)
