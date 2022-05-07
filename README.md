@@ -6,18 +6,19 @@ to spot usages of unsafe in their code. Machine learning can be used to classify
 the reason and context of this usage.
 
 This toolkit should provide a wrapper / Docker container for
-<https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
+[anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C). 
+Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
 ## Installation (local)
 
 ### Prerequisites
 
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
+Pull the unsafe-go-classifier from [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C).
 
 Also, install go-geiger and make sure it's located in one of your path variables.
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
-You may want to install these packages in a local environment instead of global: `$python3 -m venv .venv              ` `source .venv/bin/activate`.
+You may want to install these packages in a local environment instead of global: `$python3 -m venv .venv ` `$source .venv/bin/activate`.
 If you want to pull SSH repositories with this tool, make sure you have working SSH access. 
 
 ## Installation (Docker machine)
@@ -25,7 +26,7 @@ If you want to pull SSH repositories with this tool, make sure you have working 
 ### Prerequisites
 
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
+Pull the unsafe-go-classifier from [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C).
 Also, make sure you execute the script with a user which has access to Docker.
 
 ### Building the image
@@ -118,3 +119,9 @@ This project can be tested using the tests.py file and the following command:
 You can also run the tests in Visual Studio Code, the test settings have been preconfigured.
 
 Some tests are version and package specific, so the paths for the tests should be updated to the corresponding packages.
+
+
+## Classifier - anonymized submission
+
+- The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
+- Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
