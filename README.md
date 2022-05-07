@@ -18,8 +18,6 @@ You can download the unsafe-go-classifier from [figshare](https://figshare.com/n
 
 ```
 docker load -i classifier.tar
-docker images # To get the current $ID of the image
-docker rename $ID usgoc/pred:latest
 ```
 
 ## Installation (local)
