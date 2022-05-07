@@ -16,7 +16,6 @@ Disclaimer: The docker container are not fully functional on M1 MacBooks yet.
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
 You can download the unsafe-go-classifier from [figshare](https://figshare.com/ndownloader/files/35038891?private_link=104bd2191b4fdd1ad430) and load the image[^1]:
 
-[^1]: After publication, the image will be available via a docker registery. Thus, it will be sufficient to use `docker pull`. 
 
 ```
 docker load -i classifier.tar
@@ -138,3 +137,7 @@ Some tests are version and package specific, so the paths for the tests should b
 
 - The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
 - Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
+
+
+
+[^1]: After publication, the image will be available via a docker registery. Thus, it will be sufficient to use `docker pull`. 
