@@ -11,6 +11,8 @@ Snippets of Go code should be given as a parameter for a container. The containe
 
 ## Prerequisites: Get Classifier Container
 
+Disclaimer: The docker container are not fully functional on M1 MacBooks yet. 
+
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
 You can download the unsafe-go-classifier from [figshare](https://figshare.com/ndownloader/files/35038891?private_link=104bd2191b4fdd1ad430) and load the image[^1]:
 
