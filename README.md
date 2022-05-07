@@ -14,7 +14,16 @@ Snippets of Go code should be given as a parameter for a container. The containe
 ### Prerequisites
 
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-Pull the unsafe-go-classifier from [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C).
+You can get the unsafe-go-classifier from [figshare TODO add when uploaded](TODO) and load the image[^1]:
+
+[^1]: After publication, the image will be available via a docker registery. Thus, it will be sufficient to use `docker pull`. 
+
+```
+docker load -i classifier.tar
+docker images # To get the current $ID of the image
+docker rename $ID usgoc/pred:latest
+```
+
 
 Also, install go-geiger and make sure it's located in one of your path variables.
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
