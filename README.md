@@ -16,12 +16,8 @@ You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pr
 Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
 
 Also, install go-geiger and make sure it's located in one of your path variables.
-<<<<<<< HEAD
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
 You may want to install these packages in a local environment instead of global: `$python3 -m venv .venv ` `$source .venv/bin/activate`.
-=======
-To install the Python dependencies, run the following command `pip install -r requirements.txt`
->>>>>>> parent of b4f2d6d (Add anonymized repositories)
 If you want to pull SSH repositories with this tool, make sure you have working SSH access. 
 
 ## Installation (Docker machine)
