@@ -135,7 +135,7 @@ Some tests are version and package specific, so the paths for the tests should b
 
 ## Classifier - anonymized submission
 
-- The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
+- The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe-go-classifier-103C>
 - Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
 
 
