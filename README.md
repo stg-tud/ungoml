@@ -9,6 +9,8 @@ This toolkit should provide a wrapper / Docker container for
 [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C). 
 Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
+![Overview graph of UnGoML usage](./gfx/overallArchitecture.png)
+
 ## Installation (local)
 
 ### Prerequisites
