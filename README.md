@@ -11,12 +11,24 @@ Snippets of Go code should be given as a parameter for a container. The containe
 
 ![Overview graph of UnGoML usage](./gfx/overallArchitecture.png)
 
+## Prerequisites: Get Classifier Container
+
+Disclaimer: The docker container are not fully functional on M1 MacBooks yet. 
+
+You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
+You can download the unsafe-go-classifier from [figshare](https://figshare.com/ndownloader/files/35038891?private_link=104bd2191b4fdd1ad430) and load the image[^1]:
+
+
+```
+docker load -i classifier.tar
+```
+
 ## Installation (local)
+
 
 ### Prerequisites
 
-You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-Pull the unsafe-go-classifier from [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C).
+Get the classifier container as described above. 
 
 Also, install go-geiger and make sure it's located in one of your path variables.
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
@@ -27,9 +39,9 @@ If you want to pull SSH repositories with this tool, make sure you have working 
 
 ### Prerequisites
 
-You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
-Pull the unsafe-go-classifier from [anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C).
+Get the classifier container as described above. 
 Also, make sure you execute the script with a user which has access to Docker.
+
 
 ### Building the image
 
@@ -125,5 +137,9 @@ Some tests are version and package specific, so the paths for the tests should b
 
 ## Classifier - anonymized submission
 
-- The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
+- The anoymized repository with the classifier: <https://anonymous.4open.science/r/unsafe-go-classifier-103C>
 - Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling: <https://anonymous.4open.science/r/unsafe_go_study_results-F24B>
+
+
+
+[^1]: After publication, the image will be available via a docker registery. Thus, it will be sufficient to use `docker pull`. 
