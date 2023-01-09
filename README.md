@@ -6,8 +6,7 @@ to spot usages of unsafe in their code. Machine learning can be used to classify
 the reason and context of this usage.
 
 This toolkit should provide a wrapper / Docker container for
-[anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C). 
-Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
+<https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
 ![Overview graph of UnGoML usage](./gfx/overallArchitecture.png)
 
@@ -134,6 +133,15 @@ You can also run the tests in Visual Studio Code, the test settings have been pr
 
 Some tests are version and package specific, so the paths for the tests should be updated to the corresponding packages.
 
+## Audit Examples for *unsafe* usages
+
+Our tool can guide the process of auditing *unsafe* usages by categorizing usages. 
+Existing linter can identify an *unsafe* usage while their lack to provide more detailed information about their porpuse. 
+One linter in this category is [gosec](https://github.com/securego/gosec) that provides an option to flag false positives with `#nosec`. 
+Optinally, one can add the rule to the comment, such as `G103` for the rule that identify *unsafe* usages.
+Thus, this comment helps to identify examples of *unsafe* usages that have been analyzed by a linter and manually verified. 
+A simple and fast query to github results in about 370 different Go-files that make use of `#nosec G103`: <https://github.com/search?l=&q=%2F%2F%23nosec+G103+language%3AGo&type=code>.
+Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
 
 ## Classifier - anonymized submission
 
