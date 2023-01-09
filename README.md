@@ -120,3 +120,13 @@ This project can be tested using the tests.py file and the following command:
 You can also run the tests in Visual Studio Code, the test settings have been preconfigured.
 
 Some tests are version and package specific, so the paths for the tests should be updated to the corresponding packages.
+
+## Audit Examples for *unsafe* usages
+
+Our tool can guide the process of auditing *unsafe* usages by categorizing usages. 
+Existing linter can identify an *unsafe* usage while their lack to provide more detailed information about their porpuse. 
+One linter in this category is [gosec](https://github.com/securego/gosec) that provides an option to flag false positives with `#nosec`. 
+Optinally, one can add the rule to the comment, such as `G103` for the rule that identify *unsafe* usages.
+Thus, this comment helps to identify examples of *unsafe* usages that have been analyzed by a linter and manually verified. 
+A simple and fast query to github results in about 370 different Go-files that make use of `#nosec G103`: <https://github.com/search?l=&q=%2F%2F%23nosec+G103+language%3AGo&type=code>.
+Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
