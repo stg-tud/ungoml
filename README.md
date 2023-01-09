@@ -6,7 +6,8 @@ to spot usages of unsafe in their code. Machine learning can be used to classify
 the reason and context of this usage.
 
 This toolkit should provide a wrapper / Docker container for
-<https://github.com/Cortys/unsafe-go-classifier>. Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
+[anonymized](https://anonymous.4open.science/r/unsafe-go-classifier-103C). 
+ Snippets of Go code should be given as a parameter for a container. The container will then analyze the code for unsafe usages and try to classify it.
 
 ![Overview graph of UnGoML usage](./gfx/overallArchitecture.png)
 
