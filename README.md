@@ -1,8 +1,8 @@
 # Unsafe Toolkit
 
-The usage of the unsafe library in Go allows developers to circumvent its memory
-protection and can introduce security vulnerabilities. `go-geiger` helps developers
-to spot usages of unsafe in their code. Machine learning can be used to classify
+The usage of the unsafe library in Go allows developers to circumvent its memory protection and can introduce security vulnerabilities. 
+`go-geiger` helps developers to spot usages of unsafe in their code. 
+Machine learning can be used to classify
 the reason and context of this usage.
 
 This toolkit should provide a wrapper / Docker container for
@@ -30,7 +30,7 @@ docker load -i classifier.tar
 
 Get the classifier container as described above. 
 
-Also, install go-geiger and make sure it's located in one of your path variables.
+Also, install [go-geiger](https://github.com/jlauinger/go-geiger) and make sure it's located in one of your path variables.
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
 You may want to install these packages in a local environment instead of global: `$python3 -m venv .venv ` `$source .venv/bin/activate`.
 If you want to pull SSH repositories with this tool, make sure you have working SSH access. 
@@ -41,7 +41,6 @@ If you want to pull SSH repositories with this tool, make sure you have working 
 
 Get the classifier container as described above. 
 Also, make sure you execute the script with a user which has access to Docker.
-
 
 ### Building the image
 
@@ -143,6 +142,23 @@ Optinally, one can add the rule to the comment, such as `G103` for the rule that
 Thus, this comment helps to identify examples of *unsafe* usages that have been analyzed by a linter and manually verified. 
 A simple and fast query to github results in about 370 different Go-files that make use of `#nosec G103`: <https://github.com/search?l=&q=%2F%2F%23nosec+G103+language%3AGo&type=code>.
 Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
+
+## In-depth resources about *unsafe* usages
+
+Several members of the Go community are engaged in sharing their knowledge and insights about the _unsafe_* API. 
+Below, we list a few of these resources. 
+In case, you think we missed one worthwhile reading or watching, feel free to open an issue/pull request to get it merged. 
+The Table is ordered alphabetical. 
+
+| Author | Where | Title | URL | Date | Last visit |
+| ------ | ----- | ----- | --- | ---- | ------- | 
+| Bowes, J. | dotGo 2019 | Shattered Mirror: An Introduction to Reflect and Unsafe | [YouTube](https://www.youtube.com/watch?v=ZJFMvWHtSAA) | Mar, 25 2019 | Jan, 13 2023 | 
+| Gopher Academy Blog | Blog | Safe use of unsafe.Pointer | [Blog](https://blog.gopheracademy.com/advent-2019/safe-use-of-unsafe-pointer/) | Dec, 5 2019 | Jan, 13 2023 |
+| Kochetkov, A. | Hackernoon | Golang Unsafe Type Conversions and Memory Access | [Hackernoon](https://hackernoon.com/golang-unsafe-type-conversions-and-memory-access-odz3yrl) | Mar, 15 2020 | Jan, 13 2023 |
+| Lauinger, J. | dev.to | Exploitation Exercise with unsafe.Pointer in Go: Information Leak (Part 1) | [dev.to](https://dev.to/jlauinger/exploitation-exercise-with-unsafe-pointer-in-go-information-leak-part-1-1kga) | May, 13 2020 | Jan, 13 2023 | 
+| Walker, J. | GopherCon 2020 | Safety Not Guaranteed: Calling Windows APIs using Unsafe & Syscall | [YouTube](https://www.youtube.com/watch?v=EsPcKkESYPA) | Dec, 22 2020 | Jan, 13 2023 | 
+| Wickert, A. | BSides Berlin 2023 | Go is memory safe isn't it? | [YouTube](https://www.youtube.com/watch?v=y5xd6ryxJ3U) | Sep, 20 2020 | Jan, 13 2023 | 
+
 
 ## Classifier - anonymized submission
 
