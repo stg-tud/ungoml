@@ -1,0 +1,3 @@
+[submodule "unsafe-go-classifier"]
+	path = unsafe-go-classifier
+	url = https://github.com/Cortys/unsafe-go-classifier
