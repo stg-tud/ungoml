@@ -121,7 +121,7 @@ You can also run the tests in Visual Studio Code, the test settings have been pr
 
 Some tests are version and package specific, so the paths for the tests should be updated to the corresponding packages.
 
-## Audit Examples for *unsafe* usages
+## Audit examples for *unsafe* usages
 
 Our tool can guide the process of auditing *unsafe* usages by categorizing usages. 
 Existing linter can identify an *unsafe* usage while their lack to provide more detailed information about their porpuse. 
@@ -129,4 +129,27 @@ One linter in this category is [gosec](https://github.com/securego/gosec) that p
 Optinally, one can add the rule to the comment, such as `G103` for the rule that identify *unsafe* usages.
 Thus, this comment helps to identify examples of *unsafe* usages that have been analyzed by a linter and manually verified. 
 A simple and fast query to github results in about 370 different Go-files that make use of `#nosec G103`: <https://github.com/search?l=&q=%2F%2F%23nosec+G103+language%3AGo&type=code>.
+
+## In-depth resources about *unsafe* usages
+
+Several members of the Go community are engaged in sharing their knowledge and insights about the _unsafe_* API. 
+Below, we list a few of these resources. 
+In case, you think we missed one worthwhile reading or watching, feel free to open an issue/pull request to get it merged. 
+The Table is ordered alphabetical. 
+
+| Author | Where | Title | URL | Date | Last visit |
+| ------ | ----- | ----- | --- | ---- | ------- | 
+| Bowes, J. | dotGo 2019 | Shattered Mirror: An Introduction to Reflect and Unsafe | [YouTube](https://www.youtube.com/watch?v=ZJFMvWHtSAA) | Mar, 25 2019 | Jan, 13 2023 | 
+| Gopher Academy Blog | Blog | Safe use of unsafe.Pointer | [Blog](https://blog.gopheracademy.com/advent-2019/safe-use-of-unsafe-pointer/) | Dec, 5 2019 | Jan, 13 2023 |
+| Kochetkov, A. | Hackernoon | Golang Unsafe Type Conversions and Memory Access | [Hackernoon](https://hackernoon.com/golang-unsafe-type-conversions-and-memory-access-odz3yrl) | Mar, 15 2020 | Jan, 13 2023 |
+| Lauinger, J. | dev.to | Exploitation Exercise with unsafe.Pointer in Go: Information Leak (Part 1) | [dev.to](https://dev.to/jlauinger/exploitation-exercise-with-unsafe-pointer-in-go-information-leak-part-1-1kga) | May, 13 2020 | Jan, 13 2023 | 
+| Walker, J. | GopherCon 2020 | Safety Not Guaranteed: Calling Windows APIs using Unsafe & Syscall | [YouTube](https://www.youtube.com/watch?v=EsPcKkESYPA) | Dec, 22 2020 | Jan, 13 2023 | 
+| Wickert, A. | BSides Berlin 2023 | Go is memory safe isn't it? | [YouTube](https://www.youtube.com/watch?v=y5xd6ryxJ3U) | Sep, 20 2020 | Jan, 13 2023 | 
+
+
+## Classifier
+
+- The implementation of classifier is available in this [Cortys/unsafe-go-classifier](https://github.com/Cortys/unsafe-go-classifier) GitHub repository and archived via [figshare](https://figshare.com/articles/software/unsafe-go-classifier/22259155). The Docker container is available via [GitHub](https://github.com/Cortys/unsafe-go-classifier/pkgs/container/usgoc%2Fpred) and archived via [figshare](https://figshare.com/articles/software/UnGoML_Prediction_Container/22266490).
+- Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling is available in this [Cortys/unsafe_go_study_results](https://github.com/Cortys/unsafe_go_study_results) GitHub repository. 
+
 Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
