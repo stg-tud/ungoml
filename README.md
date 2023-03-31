@@ -10,6 +10,20 @@ This toolkit should provide a wrapper / Docker container for
 
 ![Overview graph of UnGoML usage](./gfx/overallArchitecture.png)
 
+📖 Overview
+========
+
+- [Installation (local)](#installation-local)
+- [Installation (Docker)](#installation-docker-machine)
+- [Running the Runner Script for Docker](#running-the-runner-script-for-docker)
+- [Arguments for the Evaluation](#arguments-for-the-evaluation)
+- [Arguments for the Visualizer](#arguments-for-the-visualizer)
+- [Usage Examples](#usage-examples)
+- [Testing](#testing)
+- [Audit Examples for Unsafe Usages](#audit-examples-for-unsafe-usages)
+- [In-depth Resources about Unsafe Usages](#in-depth-resources-about-unsafe-usages)
+- [Classifier](#classifier)
+
 ## Installation (local)
 
 ### Prerequisites
@@ -17,12 +31,12 @@ This toolkit should provide a wrapper / Docker container for
 You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pred:latest.
 Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
 
-Also, install go-geiger and make sure it's located in one of your path variables.
+Also, install [go-geiger](https://github.com/jlauinger/go-geiger) and make sure it's located in one of your path variables.
 To install the Python dependencies, run the following command `pip install -r requirements.txt`.
 You may want to install these packages in a local environment instead of global: `$python3 -m venv .venv ` `$source .venv/bin/activate`.
 If you want to pull SSH repositories with this tool, make sure you have working SSH access. 
 
-## Installation (Docker machine)
+## Installation (Docker)
 
 ### Prerequisites
 
@@ -30,13 +44,13 @@ You should have the unsafe-go-classifier image downloaded and tagged as usgoc/pr
 Pull the unsafe-go-classifier from <https://github.com/Cortys/unsafe-go-classifier>.
 Also, make sure you execute the script with a user which has access to Docker.
 
-### Building the image
+### Building the Image
 
 Execute the following command to build the image:
 
 `sudo docker build . -t unsafe-go-toolkit`
 
-## Running the runner script for Docker
+## Running the Runner Script for Docker
 
 Run the run.py file with the following arguments to export analysis data from a file/project:
 
@@ -60,7 +74,7 @@ Example usage:
 
 `./run.py -p https://github.com/jlauinger/go-safer.git`
 
-## Arguments for the evaluation
+## Arguments for the Evaluation
 
 Run the evaluate.py file with the following arguments to export analysis data from a file/project:
 
@@ -79,10 +93,17 @@ optional arguments:
                         Number of concurrent evaluation containers the script should run
 ```
 
+Example usage:
 
-`./evaluate.py -p git@github.com:jlauinger/go-safer.git`
+![Example to execute the evaluate.py script with the go-safer repository.](./gfx/ungoml_evaluate.gif) 
 
-## Arguments for the visualizer
+`./evaluate.py -p https://github.com/jlauinger/go-safer.git`
+
+This command analyzes the passed repository (`-p`) for unsafe usages, passes each unsafe usage into the classifier, and write the classification results for the complete project in the file `output.json` in the folder `output`.
+
+
+
+## Arguments for the Visualizer
 
 Run the visualize.py with the following arguments to visualize your acquired analysis:
 
@@ -101,7 +122,7 @@ optional arguments:
 `./visualize.py -i output/output.json /output`
 
 
-## Usage examples
+## Usage Examples
 
 This example runs the analysis on the go-safer repository and saves the data on a custom file location.
 
@@ -130,6 +151,8 @@ Optinally, one can add the rule to the comment, such as `G103` for the rule that
 Thus, this comment helps to identify examples of *unsafe* usages that have been analyzed by a linter and manually verified. 
 A simple and fast query to github results in about 370 different Go-files that make use of `#nosec G103`: <https://github.com/search?l=&q=%2F%2F%23nosec+G103+language%3AGo&type=code>.
 
+Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
+
 ## In-depth resources about *unsafe* usages
 
 Several members of the Go community are engaged in sharing their knowledge and insights about the _unsafe_* API. 
@@ -144,7 +167,7 @@ The Table is ordered alphabetical.
 | Kochetkov, A. | Hackernoon | Golang Unsafe Type Conversions and Memory Access | [Hackernoon](https://hackernoon.com/golang-unsafe-type-conversions-and-memory-access-odz3yrl) | Mar, 15 2020 | Jan, 13 2023 |
 | Lauinger, J. | dev.to | Exploitation Exercise with unsafe.Pointer in Go: Information Leak (Part 1) | [dev.to](https://dev.to/jlauinger/exploitation-exercise-with-unsafe-pointer-in-go-information-leak-part-1-1kga) | May, 13 2020 | Jan, 13 2023 | 
 | Walker, J. | GopherCon 2020 | Safety Not Guaranteed: Calling Windows APIs using Unsafe & Syscall | [YouTube](https://www.youtube.com/watch?v=EsPcKkESYPA) | Dec, 22 2020 | Jan, 13 2023 | 
-| Wickert, A. | BSides Berlin 2023 | Go is memory safe isn't it? | [YouTube](https://www.youtube.com/watch?v=y5xd6ryxJ3U) | Sep, 20 2020 | Jan, 13 2023 | 
+| Wickert, A. | BSides Berlin 2020 | Go is memory safe isn't it? | [YouTube](https://www.youtube.com/watch?v=y5xd6ryxJ3U) | Sep, 20 2020 | Jan, 13 2023 | 
 
 
 ## Classifier
@@ -152,4 +175,3 @@ The Table is ordered alphabetical.
 - The implementation of classifier is available in this [Cortys/unsafe-go-classifier](https://github.com/Cortys/unsafe-go-classifier) GitHub repository and archived via [figshare](https://figshare.com/articles/software/unsafe-go-classifier/22259155). The Docker container is available via [GitHub](https://github.com/Cortys/unsafe-go-classifier/pkgs/container/usgoc%2Fpred) and archived via [figshare](https://figshare.com/articles/software/UnGoML_Prediction_Container/22266490).
 - Fork of `unsafe_go_study_result` that includes our CFG generation implementation along with the data used for labelling is available in this [Cortys/unsafe_go_study_results](https://github.com/Cortys/unsafe_go_study_results) GitHub repository. 
 
-Note, that this query is via the [GitHub Search API](https://docs.github.com/en/rest/search?apiVersion=2022-11-28#timeouts-and-incomplete-results) and result in incomplete and may differentiating results. 
