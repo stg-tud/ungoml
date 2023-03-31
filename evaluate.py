@@ -182,7 +182,8 @@ def evaluate_file(file_tuple : Tuple[str, List[int]], output_dic : Dict):
     
     for line in lines:
         # package = file_content[0].replace('package', '').strip()
-        docker_args = f'--go-version 1.17 --project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
+        docker_args = f'--go-version 1.20 --project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
+        #docker_args = f'--go-version 1.17 --project {project_name} --line {line} --package {package} --file {relative_file_path} --base {parent_path} predict -m WL2GNN'
         # Run container for each line 
         try:
             parent_mount = f"-v {parent_path}:{parent_path}"
