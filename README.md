@@ -1,3 +1,5 @@
+[![foss-award](https://img.shields.io/badge/MSR%20FOSS%20Award-2023-brightgreen)](https://conf.researchr.org/track/msr-2023/msr-2023-foss-award)
+
 # Unsafe Toolkit
 
 The usage of the unsafe library in Go allows developers to circumvent its memory
